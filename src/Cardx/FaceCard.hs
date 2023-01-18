@@ -8,14 +8,13 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
-module Main (main) where
+module Cardx.FaceCard (FaceCard (..)) where
 
-import Cardx.Model
-import Data.Vector (Vector)
-import Data.Vector qualified as V
-import Relude
+import Optics.TH (makeFieldLabelsNoPrefix)
 
-main :: IO ()
-main = putStrLn "Hello"
+data FaceCard = FaceCard
+  {kind :: Integer, score :: Integer}
+  deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''FaceCard

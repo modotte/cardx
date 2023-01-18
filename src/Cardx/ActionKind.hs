@@ -8,14 +8,11 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
-module Main (main) where
+module Cardx.ActionKind (ActionKind (..)) where
 
-import Cardx.Model
-import Data.Vector (Vector)
-import Data.Vector qualified as V
-import Relude
+import Optics.TH (makeFieldLabelsNoPrefix)
 
-main :: IO ()
-main = putStrLn "Hello"
+data ActionKind = Skip | Draw2 deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''ActionKind

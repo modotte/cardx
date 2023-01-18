@@ -8,14 +8,16 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
-module Main (main) where
+module Cardx.WildCard (WildCard (..)) where
 
-import Cardx.Model
-import Data.Vector (Vector)
-import Data.Vector qualified as V
-import Relude
+import Cardx.WildKind (WildKind (..))
+import Optics.TH (makeFieldLabelsNoPrefix)
 
-main :: IO ()
-main = putStrLn "Hello"
+data WildCard = WildCard
+  { kind :: WildKind,
+    score :: Integer
+  }
+  deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''WildCard

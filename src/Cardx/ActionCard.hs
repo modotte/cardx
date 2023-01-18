@@ -8,14 +8,14 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
-module Main (main) where
+module Cardx.ActionCard (ActionCard (..)) where
 
-import Cardx.Model
-import Data.Vector (Vector)
-import Data.Vector qualified as V
-import Relude
+import Cardx.ActionKind (ActionKind (..))
+import Optics.TH (makeFieldLabelsNoPrefix)
 
-main :: IO ()
-main = putStrLn "Hello"
+data ActionCard = ActionCard
+  { kind :: ActionKind,
+    score :: Integer
+  }
+  deriving (Show, Eq)
