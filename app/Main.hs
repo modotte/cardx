@@ -12,6 +12,7 @@
 
 module Main (main) where
 
+import Data.Vector (Vector)
 import Optics.TH (makeFieldLabelsNoPrefix)
 import Relude
 
@@ -56,6 +57,50 @@ data FaceCard = FaceCard
   deriving (Show, Eq)
 
 makeFieldLabelsNoPrefix ''FaceCard
+
+data ColoredKind
+  = CKActionCard ActionCard
+  | CKFaceCard FaceCard
+  | Nothing
+  deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''ColoredKind
+
+data ColoredCard
+  = RedCard ColoredKind
+  | YellowCard ColoredKind
+  | GreenCard ColoredKind
+  | BlueCard ColoredKind
+  deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''ColoredCard
+
+data Card = CWild WildCard | CColoredCard ColoredCard deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''Card
+
+data GamePlayer = GamePlayer
+  { hand :: Vector Card,
+    score :: Integer,
+    drawCount :: Integer
+  }
+  deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''GamePlayer
+
+data GameState = GameState
+  { player :: GamePlayer,
+    computer :: GamePlayer,
+    wildcardColor :: Maybe ColoredCard,
+    deck :: Vector Card,
+    drawPile :: Vector Card,
+    turn :: Turn,
+    dealer :: Dealer,
+    progression :: GameProgression
+  }
+  deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''GameState
 
 main :: IO ()
 main = putStrLn "Hello"
