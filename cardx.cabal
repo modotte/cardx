@@ -27,6 +27,7 @@ library
   exposed-modules:
       Cardx.ActionCard
       Cardx.ActionKind
+      Cardx.Constant
       Cardx.FaceCard
       Cardx.Model
       Cardx.WildCard
