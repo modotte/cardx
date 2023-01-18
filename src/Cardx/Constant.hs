@@ -4,7 +4,7 @@ maxScore :: Integer
 maxScore = 500
 
 actionScore :: Integer
-wildScore :: Integer
 actionScore = 20
 
+wildScore :: Integer
 wildScore = 50
