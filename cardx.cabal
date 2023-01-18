@@ -32,7 +32,6 @@ library
       Cardx.Model
       Cardx.WildCard
       Cardx.WildKind
-      Lib
   other-modules:
       Paths_cardx
   hs-source-dirs:
@@ -90,6 +89,7 @@ test-suite cardx-test
     , cardx
     , data-default-class
     , generic-lens
+    , hspec
     , monomer
     , optics-th
     , relude

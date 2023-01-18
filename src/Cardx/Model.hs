@@ -22,13 +22,17 @@ module Cardx.Model
     Card (..),
     GamePlayer (..),
     GameState (..),
+    makeWilds,
   )
 where
 
 import Cardx.ActionCard (ActionCard (..))
+import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
 import Cardx.WildCard (WildCard (..))
+import Cardx.WildKind (WildKind)
 import Data.Vector (Vector)
+import Data.Vector qualified as V
 import Optics.TH (makeFieldLabelsNoPrefix)
 import Relude (Eq, Integer, Maybe, Show)
 
@@ -87,3 +91,6 @@ data GameState = GameState
   deriving (Show, Eq)
 
 makeFieldLabelsNoPrefix ''GameState
+
+makeWilds :: WildKind -> Vector Card
+makeWilds x = V.replicate 4 (CWild (WildCard {kind = x, score = CC.wildScore}))
