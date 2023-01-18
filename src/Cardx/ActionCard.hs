@@ -19,3 +19,5 @@ data ActionCard = ActionCard
     score :: Integer
   }
   deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''ActionCard
