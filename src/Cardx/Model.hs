@@ -38,6 +38,7 @@ import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
 import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
+import Data.Default.Class (Default, def)
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Optics.TH (makeFieldLabelsNoPrefix)
@@ -82,8 +83,6 @@ data GamePlayer = GamePlayer
   }
   deriving (Show, Eq)
 
-makeFieldLabelsNoPrefix ''GamePlayer
-
 data GameState = GameState
   { player :: GamePlayer,
     computer :: GamePlayer,
@@ -114,9 +113,9 @@ makeColoredCardSet from color =
 
 makeColoreds :: Vector Card
 makeColoreds =
-  V.concatMap (\i -> V.concatMap (\x -> ofCColoredCard $ makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
+  V.concatMap (\i -> V.concatMap (\x -> ofCColoredCards $ makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
   where
-    ofCColoredCard = V.map CColored
+    ofCColoredCards = V.map CColored
     colors = V.fromList [RedCard, YellowCard, GreenCard, BlueCard]
     acs =
       V.fromList
