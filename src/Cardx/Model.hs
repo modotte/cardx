@@ -25,6 +25,8 @@ module Cardx.Model
     makeColoredCardSet,
     makeColoreds,
     makeDeck,
+    coloredScore,
+    cardScore,
   )
 where
 
@@ -67,7 +69,7 @@ data ColoredCard
 
 makeFieldLabelsNoPrefix ''ColoredCard
 
-data Card = CWild WildCard | CColoredCard ColoredCard deriving (Show, Eq)
+data Card = CWild WildCard | CColored ColoredCard deriving (Show, Eq)
 
 makeFieldLabelsNoPrefix ''Card
 
@@ -112,7 +114,7 @@ makeColoreds :: Vector Card
 makeColoreds =
   V.concatMap (\i -> V.concatMap (\x -> ofCColoredCard $ makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
   where
-    ofCColoredCard = V.map CColoredCard
+    ofCColoredCard = V.map CColored
     colors = V.fromList [RedCard, YellowCard, GreenCard, BlueCard]
     acs =
       V.fromList
@@ -123,3 +125,18 @@ makeColoreds =
 
 makeDeck :: Vector Card
 makeDeck = V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
+
+coloredScore :: ColoredCard -> Natural
+coloredScore =
+  f . g
+  where
+    f (CKActionCard (ActionCard {kind = _, score = s})) = s
+    f (CKFaceCard (FaceCard {kind = _, score = s})) = s
+    g (RedCard c) = c
+    g (YellowCard c) = c
+    g (GreenCard c) = c
+    g (BlueCard c) = c
+
+cardScore :: Card -> Natural
+cardScore (CWild (WildCard {kind = _, score = s})) = s
+cardScore (CColored cc) = coloredScore cc
