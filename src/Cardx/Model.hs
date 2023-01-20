@@ -24,6 +24,7 @@ module Cardx.Model
     makeRange,
     makeColoredCardSet,
     makeColoreds,
+    makeDeck,
   )
 where
 
@@ -32,7 +33,7 @@ import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
 import Cardx.WildCard (WildCard (..))
-import Cardx.WildKind (WildKind)
+import Cardx.WildKind (WildKind (..))
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Optics.TH (makeFieldLabelsNoPrefix)
@@ -107,10 +108,11 @@ makeColoredCardSet from color =
     actions = V.map (color . CKActionCard)
     faces = makeRange from (\x -> color (CKFaceCard (FaceCard x x)))
 
-makeColoreds :: Vector ColoredCard
+makeColoreds :: Vector Card
 makeColoreds =
-  V.concatMap (\i -> V.concatMap (\x -> makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
+  V.concatMap (\i -> V.concatMap (\x -> ofCColoredCard $ makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
   where
+    ofCColoredCard = V.map CColoredCard
     colors = V.fromList [RedCard, YellowCard, GreenCard, BlueCard]
     acs =
       V.fromList
@@ -118,3 +120,6 @@ makeColoreds =
           ActionCard {kind = Skip, score = CC.actionScore},
           ActionCard {kind = Draw2, score = CC.actionScore}
         ]
+
+makeDeck :: Vector Card
+makeDeck = V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
