@@ -109,10 +109,8 @@ makeColoredCardSet from color =
 
 makeColoreds :: Vector ColoredCard
 makeColoreds =
-  V.concat [zeros, ones]
+  V.concatMap (\i -> V.concatMap (\x -> makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
   where
-    zeros = V.concatMap (\x -> makeColoredCardSet 0 x acs) colors
-    ones = V.concatMap (\x -> makeColoredCardSet 1 x acs) colors
     colors = V.fromList [RedCard, YellowCard, GreenCard, BlueCard]
     acs =
       V.fromList
