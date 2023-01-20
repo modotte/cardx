@@ -23,6 +23,7 @@ module Cardx.Model
     makeWilds,
     makeRange,
     makeColoredCardSet,
+    makeColoreds,
   )
 where
 
@@ -52,7 +53,6 @@ makeFieldLabelsNoPrefix ''Turn
 data ColoredKind
   = CKActionCard ActionCard
   | CKFaceCard FaceCard
-  | CKNothing
   deriving (Show, Eq)
 
 makeFieldLabelsNoPrefix ''ColoredKind
@@ -106,3 +106,17 @@ makeColoredCardSet from color =
   where
     actions = V.map (color . CKActionCard)
     faces = makeRange from (\x -> color (CKFaceCard (FaceCard x x)))
+
+makeColoreds :: Vector ColoredCard
+makeColoreds =
+  V.concat [zeros, ones]
+  where
+    zeros = V.concatMap (\x -> makeColoredCardSet 0 x acs) colors
+    ones = V.concatMap (\x -> makeColoredCardSet 1 x acs) colors
+    colors = V.fromList [RedCard, YellowCard, GreenCard, BlueCard]
+    acs =
+      V.fromList
+        [ ActionCard {kind = Skip, score = CC.actionScore},
+          ActionCard {kind = Skip, score = CC.actionScore},
+          ActionCard {kind = Draw2, score = CC.actionScore}
+        ]
