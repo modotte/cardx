@@ -35,6 +35,8 @@ dependencies:
   - bytestring
   - generic-lens
   - optics-th
+  - monomer
+  - text-show
 
 ghc-options:
   - -Wall
