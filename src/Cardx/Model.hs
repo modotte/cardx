@@ -27,6 +27,7 @@ module Cardx.Model
     makeDeck,
     coloredScore,
     cardScore,
+    pickDealer,
   )
 where
 
@@ -140,3 +141,6 @@ coloredScore =
 cardScore :: Card -> Natural
 cardScore (CWild (WildCard {kind = _, score = s})) = s
 cardScore (CColored cc) = coloredScore cc
+
+pickDealer :: Card -> Card -> Dealer
+pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer

@@ -2,7 +2,7 @@ import Cardx.ActionCard (ActionCard (..))
 import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
-import Cardx.Model (Card (..), ColoredCard (..), ColoredKind (..))
+import Cardx.Model (Card (..), ColoredCard (..), ColoredKind (..), Dealer (..), Turn (..))
 import Cardx.Model qualified as CM
 import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
@@ -275,3 +275,9 @@ main = hspec $ do
 
   it "cardScore (ColoredCard)" $ do
     CM.cardScore (CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))) `shouldBe` 85
+
+  it "pickDealer" $ do
+    CM.pickDealer pc cc `shouldBe` DComputer
+  where
+    pc = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))
+    cc = CWild (WildCard {kind = WildDraw4, score = 102})
