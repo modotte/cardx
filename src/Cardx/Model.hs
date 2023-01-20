@@ -38,11 +38,11 @@ import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
 import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
-import Data.Default.Class (Default, def)
-import Data.Vector (Vector)
+import Data.Vector (Vector, (!), (!?))
 import Data.Vector qualified as V
 import Optics.TH (makeFieldLabelsNoPrefix)
 import Relude
+import Relude.Extra.Lens (over, (.~), (^.))
 
 data GameProgression = Win | InProgress | Lose deriving (Show, Eq)
 
@@ -82,6 +82,8 @@ data GamePlayer = GamePlayer
     drawCount :: Natural
   }
   deriving (Show, Eq)
+
+makeFieldLabelsNoPrefix ''GamePlayer
 
 data GameState = GameState
   { player :: GamePlayer,
