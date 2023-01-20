@@ -28,6 +28,7 @@ module Cardx.Model
     coloredScore,
     cardScore,
     pickDealer,
+    nextTurn,
   )
 where
 
@@ -144,3 +145,7 @@ cardScore (CColored cc) = coloredScore cc
 
 pickDealer :: Card -> Card -> Dealer
 pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer
+
+nextTurn :: Turn -> Turn
+nextTurn GTComputer = GTPlayer
+nextTurn GTPlayer = GTComputer

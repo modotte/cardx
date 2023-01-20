@@ -277,7 +277,9 @@ main = hspec $ do
     CM.cardScore (CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))) `shouldBe` 85
 
   it "pickDealer" $ do
+    let pc = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))
+        cc = CWild (WildCard {kind = WildDraw4, score = 102})
     CM.pickDealer pc cc `shouldBe` DComputer
-  where
-    pc = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))
-    cc = CWild (WildCard {kind = WildDraw4, score = 102})
+
+  it "nextTurn" $ do
+    CM.nextTurn GTComputer `shouldBe` GTPlayer
