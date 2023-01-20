@@ -32,7 +32,7 @@ import Cardx.WildKind (WildKind)
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Optics.TH (makeFieldLabelsNoPrefix)
-import Relude (Eq, Integer, Maybe, Show)
+import Relude
 
 data GameProgression = Win | InProgress | Lose deriving (Show, Eq)
 
@@ -69,8 +69,8 @@ makeFieldLabelsNoPrefix ''Card
 
 data GamePlayer = GamePlayer
   { hand :: Vector Card,
-    score :: Integer,
-    drawCount :: Integer
+    score :: Natural,
+    drawCount :: Natural
   }
   deriving (Show, Eq)
 

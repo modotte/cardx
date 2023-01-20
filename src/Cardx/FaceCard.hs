@@ -14,8 +14,8 @@ import Optics.TH (makeFieldLabelsNoPrefix)
 import Relude
 
 data FaceCard = FaceCard
-  { kind :: Integer,
-    score :: Integer
+  { kind :: Natural,
+    score :: Natural
   }
   deriving (Show, Eq)
 

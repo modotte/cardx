@@ -16,7 +16,7 @@ import Relude
 
 data ActionCard = ActionCard
   { kind :: ActionKind,
-    score :: Integer
+    score :: Natural
   }
   deriving (Show, Eq)
 

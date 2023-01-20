@@ -16,7 +16,7 @@ import Relude
 
 data WildCard = WildCard
   { kind :: WildKind,
-    score :: Integer
+    score :: Natural
   }
   deriving (Show, Eq)
 

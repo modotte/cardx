@@ -2,11 +2,11 @@ module Cardx.Constant (maxScore, actionScore, wildScore) where
 
 import Relude
 
-maxScore :: Integer
+maxScore :: Natural
 maxScore = 500
 
-actionScore :: Integer
+actionScore :: Natural
 actionScore = 20
 
-wildScore :: Integer
+wildScore :: Natural
 wildScore = 50
