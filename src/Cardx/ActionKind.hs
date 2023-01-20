@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -12,6 +11,7 @@
 module Cardx.ActionKind (ActionKind (..)) where
 
 import Optics.TH (makeFieldLabelsNoPrefix)
+import Relude
 
 data ActionKind = Skip | Draw2 deriving (Show, Eq)
 

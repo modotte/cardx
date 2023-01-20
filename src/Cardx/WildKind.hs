@@ -12,6 +12,7 @@
 module Cardx.WildKind (WildKind (..)) where
 
 import Optics.TH (makeFieldLabelsNoPrefix)
+import Relude
 
 data WildKind = Wild | WildDraw4 deriving (Show, Eq)
 

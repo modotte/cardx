@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -13,6 +12,7 @@ module Cardx.WildCard (WildCard (..)) where
 
 import Cardx.WildKind (WildKind (..))
 import Optics.TH (makeFieldLabelsNoPrefix)
+import Relude
 
 data WildCard = WildCard
   { kind :: WildKind,

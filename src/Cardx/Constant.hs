@@ -1,5 +1,7 @@
 module Cardx.Constant (maxScore, actionScore, wildScore) where
 
+import Relude
+
 maxScore :: Integer
 maxScore = 500
 

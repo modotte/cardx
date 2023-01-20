@@ -1,6 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
@@ -13,6 +12,7 @@ module Cardx.ActionCard (ActionCard (..)) where
 
 import Cardx.ActionKind (ActionKind (..))
 import Optics.TH (makeFieldLabelsNoPrefix)
+import Relude
 
 data ActionCard = ActionCard
   { kind :: ActionKind,

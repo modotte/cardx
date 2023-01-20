@@ -1,7 +1,5 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DeriveGeneric #-}
-{-# LANGUAGE DuplicateRecordFields #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedLabels #-}
@@ -93,4 +91,4 @@ data GameState = GameState
 makeFieldLabelsNoPrefix ''GameState
 
 makeWilds :: WildKind -> Vector Card
-makeWilds x = V.replicate 4 (CWild (WildCard {kind = x, score = CC.wildScore}))
+makeWilds x = V.replicate 4 (CWild (WildCard x CC.wildScore))

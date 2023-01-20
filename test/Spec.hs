@@ -1,7 +1,8 @@
 import Cardx.Model (Card (CWild), makeWilds)
 import Cardx.WildCard (WildCard (..))
-import Cardx.WildKind (WildKind (Wild, WildDraw4))
+import Cardx.WildKind (WildKind (Wild))
 import Data.Vector qualified as V
+import Relude
 import Test.Hspec (describe, hspec, it, shouldBe)
 
 main :: IO ()
