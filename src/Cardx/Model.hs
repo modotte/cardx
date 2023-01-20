@@ -1,12 +1,12 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE DeriveAnyClass #-}
+{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE MultiParamTypeClasses #-}
 {-# LANGUAGE OverloadedLabels #-}
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE NoImplicitPrelude #-}
 
 module Cardx.Model
   ( GameProgression (..),
@@ -22,14 +22,17 @@ module Cardx.Model
     GameState (..),
     makeWilds,
     makeRange,
+    makeColoredCardSet,
   )
 where
 
 import Cardx.ActionCard (ActionCard (..))
+import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
 import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind)
+import Data.Generics.Internal.VL ((^.))
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Optics.TH (makeFieldLabelsNoPrefix)
@@ -96,4 +99,11 @@ makeWilds x = V.replicate 4 (CWild (WildCard x CC.wildScore))
 
 makeRange :: Natural -> (Natural -> a) -> Vector a -> Vector a
 makeRange from f xs =
-  V.concat [xs, V.fromList $ map f [from .. 10]]
+  V.concat [xs, V.fromList $ map f [from .. 9]]
+
+makeColoredCardSet :: Natural -> (ColoredKind -> ColoredCard) -> Vector ActionCard -> Vector ColoredCard
+makeColoredCardSet from color =
+  faces . actions
+  where
+    actions = V.map (color . CKActionCard)
+    faces = makeRange from (\x -> color (CKFaceCard (FaceCard x x)))

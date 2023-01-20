@@ -33,7 +33,6 @@ dependencies:
   - vector
   - text
   - bytestring
-  - monomer
   - generic-lens
   - optics-th
 
