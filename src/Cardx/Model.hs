@@ -21,6 +21,7 @@ module Cardx.Model
     GamePlayer (..),
     GameState (..),
     makeWilds,
+    makeRange,
   )
 where
 
@@ -49,7 +50,7 @@ makeFieldLabelsNoPrefix ''Turn
 data ColoredKind
   = CKActionCard ActionCard
   | CKFaceCard FaceCard
-  | Nothing
+  | CKNothing
   deriving (Show, Eq)
 
 makeFieldLabelsNoPrefix ''ColoredKind
@@ -92,3 +93,7 @@ makeFieldLabelsNoPrefix ''GameState
 
 makeWilds :: WildKind -> Vector Card
 makeWilds x = V.replicate 4 (CWild (WildCard x CC.wildScore))
+
+makeRange :: Natural -> (Natural -> a) -> Vector a -> Vector a
+makeRange from f xs =
+  V.concat [xs, V.fromList $ map f [from .. 10]]
