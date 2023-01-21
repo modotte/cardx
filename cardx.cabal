@@ -40,6 +40,7 @@ library
   default-extensions:
       OverloadedStrings
       OverloadedLabels
+      OverloadedRecordDot
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
@@ -68,6 +69,7 @@ executable cardx-exe
   default-extensions:
       OverloadedStrings
       OverloadedLabels
+      OverloadedRecordDot
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
@@ -98,6 +100,7 @@ test-suite cardx-test
   default-extensions:
       OverloadedStrings
       OverloadedLabels
+      OverloadedRecordDot
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors

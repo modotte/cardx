@@ -30,7 +30,7 @@ buildUI wenv model = widgetTree
         [ label "Hello world",
           spacer,
           hstack
-            [ label $ "Click count: " <> TS.showt (model ^. #clickCount),
+            [ label $ "Click count: " <> TS.showt model.clickCount,
               spacer,
               button "Increase count" AppIncrease
             ]
@@ -45,7 +45,7 @@ handleEvent ::
   [AppEventResponse AppModel AppEvent]
 handleEvent wenv node model evt = case evt of
   AppInit -> []
-  AppIncrease -> [Model (model & #clickCount .~ (model ^. #clickCount + 1))]
+  AppIncrease -> [Model (model & #clickCount .~ (model.clickCount + 1))]
 
 launchGUI :: IO ()
 launchGUI = do
