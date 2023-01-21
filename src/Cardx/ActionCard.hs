@@ -1,23 +1,11 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE DuplicateRecordFields #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedLabels #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-
 module Cardx.ActionCard (ActionCard (..)) where
 
 import Cardx.ActionKind (ActionKind (..))
-import Optics.TH (makeFieldLabelsNoPrefix)
+import Data.Generics.Labels ()
 import Relude
 
 data ActionCard = ActionCard
   { kind :: ActionKind,
     score :: Natural
   }
-  deriving (Show, Eq)
-
-makeFieldLabelsNoPrefix ''ActionCard
+  deriving (Show, Eq, Generic)

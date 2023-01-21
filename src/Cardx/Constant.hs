@@ -1,4 +1,9 @@
-module Cardx.Constant (maxScore, actionScore, wildScore) where
+module Cardx.Constant
+  ( maxScore,
+    actionScore,
+    wildScore,
+  )
+where
 
 import Relude
 

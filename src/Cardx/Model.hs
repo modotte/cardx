@@ -1,13 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE DeriveAnyClass #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE FlexibleInstances #-}
-{-# LANGUAGE MultiParamTypeClasses #-}
-{-# LANGUAGE OverloadedLabels #-}
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE UndecidableInstances #-}
-
 module Cardx.Model
   ( GameProgression (..),
     Dealer (..),
@@ -40,50 +30,36 @@ import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
 import Data.Vector (Vector, (!), (!?))
 import Data.Vector qualified as V
-import Optics.TH (makeFieldLabelsNoPrefix)
 import Relude
-import Relude.Extra.Lens (over, (.~), (^.))
+import Data.Generics.Labels ()
 
-data GameProgression = Win | InProgress | Lose deriving (Show, Eq)
+data GameProgression = Win | InProgress | Lose deriving (Show, Eq, Generic)
 
-makeFieldLabelsNoPrefix ''GameProgression
+data Dealer = DPlayer | DComputer deriving (Show, Eq, Generic)
 
-data Dealer = DPlayer | DComputer deriving (Show, Eq)
+data Turn = GTPlayer | GTComputer deriving (Show, Eq, Generic)
 
-makeFieldLabelsNoPrefix ''Dealer
-
-data Turn = GTPlayer | GTComputer deriving (Show, Eq)
-
-makeFieldLabelsNoPrefix ''Turn
 
 data ColoredKind
   = CKActionCard ActionCard
   | CKFaceCard FaceCard
-  deriving (Show, Eq)
-
-makeFieldLabelsNoPrefix ''ColoredKind
+  deriving (Show, Eq, Generic)
 
 data ColoredCard
   = RedCard ColoredKind
   | YellowCard ColoredKind
   | GreenCard ColoredKind
   | BlueCard ColoredKind
-  deriving (Show, Eq)
+  deriving (Show, Eq, Generic)
 
-makeFieldLabelsNoPrefix ''ColoredCard
-
-data Card = CWild WildCard | CColored ColoredCard deriving (Show, Eq)
-
-makeFieldLabelsNoPrefix ''Card
+data Card = CWild WildCard | CColored ColoredCard deriving (Show, Eq, Generic)
 
 data GamePlayer = GamePlayer
   { hand :: Vector Card,
     score :: Natural,
     drawCount :: Natural
   }
-  deriving (Show, Eq)
-
-makeFieldLabelsNoPrefix ''GamePlayer
+  deriving (Show, Eq, Generic)
 
 data GameState = GameState
   { player :: GamePlayer,
@@ -95,9 +71,7 @@ data GameState = GameState
     dealer :: Dealer,
     progression :: GameProgression
   }
-  deriving (Show, Eq)
-
-makeFieldLabelsNoPrefix ''GameState
+  deriving (Show, Eq, Generic)
 
 makeWilds :: WildKind -> Vector Card
 makeWilds x = V.replicate 4 (CWild (WildCard x CC.wildScore))

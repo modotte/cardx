@@ -39,6 +39,7 @@ library
       src
   default-extensions:
       OverloadedStrings
+      OverloadedLabels
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
@@ -50,8 +51,8 @@ library
     , bytestring
     , data-default-class
     , generic-lens
+    , lens
     , monomer
-    , optics-th
     , relude
     , text
     , text-show
@@ -66,6 +67,7 @@ executable cardx-exe
       app
   default-extensions:
       OverloadedStrings
+      OverloadedLabels
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
@@ -78,8 +80,8 @@ executable cardx-exe
     , cardx
     , data-default-class
     , generic-lens
+    , lens
     , monomer
-    , optics-th
     , relude
     , text
     , text-show
@@ -95,6 +97,7 @@ test-suite cardx-test
       test
   default-extensions:
       OverloadedStrings
+      OverloadedLabels
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
@@ -108,8 +111,8 @@ test-suite cardx-test
     , data-default-class
     , generic-lens
     , hspec
+    , lens
     , monomer
-    , optics-th
     , relude
     , text
     , text-show
