@@ -143,4 +143,5 @@ nextTurn GTComputer = GTPlayer
 nextTurn GTPlayer = GTComputer
 
 drawACardFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
-drawACardFromDeck from to = Nothing
+drawACardFromDeck [] _ = Nothing
+drawACardFromDeck (x : xs) hand = Just (xs, hand <> V.fromList [x])

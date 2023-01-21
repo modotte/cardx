@@ -289,6 +289,6 @@ main = hspec $ do
           to = V.empty
       CM.drawACardFromDeck from to
       `shouldBe` Just
-        ( [CWild (WildCard Wild 0)],
-          V.fromList [CWild (WildCard WildDraw4 0)]
+        ( [CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)],
+          V.fromList [CWild (WildCard Wild 0)]
         )
