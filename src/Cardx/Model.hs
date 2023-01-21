@@ -19,6 +19,7 @@ module Cardx.Model
     cardScore,
     pickDealer,
     nextTurn,
+    drawACard,
   )
 where
 
@@ -140,3 +141,6 @@ pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer
 nextTurn :: Turn -> Turn
 nextTurn GTComputer = GTPlayer
 nextTurn GTPlayer = GTComputer
+
+drawACard :: Vector Card -> Vector Card -> (Vector Card, Vector Card)
+drawACard from to = (V.empty, V.empty)

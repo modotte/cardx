@@ -283,3 +283,12 @@ main = hspec $ do
 
   it "nextTurn" $ do
     CM.nextTurn GTComputer `shouldBe` GTPlayer
+
+  it "drawACard" $
+    do
+      let from = V.fromList [CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]
+          to = V.empty
+      CM.drawACard from to
+      `shouldBe` ( V.fromList [CWild (WildCard Wild 0)],
+                   V.fromList [CWild (WildCard WildDraw4 0)]
+                 )
