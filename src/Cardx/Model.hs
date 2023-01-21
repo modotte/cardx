@@ -19,7 +19,7 @@ module Cardx.Model
     cardScore,
     pickDealer,
     nextTurn,
-    drawACard,
+    drawACardFromDeck,
   )
 where
 
@@ -142,5 +142,5 @@ nextTurn :: Turn -> Turn
 nextTurn GTComputer = GTPlayer
 nextTurn GTPlayer = GTComputer
 
-drawACard :: Vector Card -> Vector Card -> (Vector Card, Vector Card)
-drawACard from to = (V.empty, V.empty)
+drawACardFromDeck :: Vector Card -> Vector Card -> Maybe (Vector Card, Vector Card)
+drawACardFromDeck from to = Nothing
