@@ -131,12 +131,12 @@ handleEvent wenv node model evt = case evt of
       cc = ch ! 0
       dealer = pickDealer pc cc
   AppChangeScene scene ->
-    let changeScene s = model & #currentScene .~ s
+    let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
           SMenu -> [Model initialModel]
-          SPickDealer -> [Model $ changeScene SPickDealer]
-          SPlay -> [Model $ changeScene SPlay]
-          SEnd -> [Model $ changeScene SEnd]
+          SPickDealer -> [changeScene SPickDealer]
+          SPlay -> [changeScene SPlay]
+          SEnd -> [changeScene SEnd]
 
 launchGUI :: IO ()
 launchGUI = do
