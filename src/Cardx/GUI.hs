@@ -17,10 +17,30 @@ data AppModel = AppModel
   }
   deriving (Show, Eq, Generic)
 
+data Scene
+  = SMenu
+  | SPickDealer
+  | SPlay
+  | SEndGame
+  deriving (Show, Eq)
+
 data AppEvent
   = AppInit
-  | AppIncrease
+  | AppScene Scene
   deriving (Show, Eq)
+
+gameBoard wenv model =
+  vstack
+    [ hstack [],
+      spacer,
+      hstack [],
+      spacer,
+      hstack
+        [ label "Pick a dealer",
+          spacer,
+          button "Proceed" (AppScene SPickDealer)
+        ]
+    ]
 
 buildUI ::
   WidgetEnv AppModel AppEvent ->
@@ -34,11 +54,7 @@ buildUI wenv model = widgetTree
           label $ "Player score: " <> TS.showt model.gameState.player.score,
           label $ "Computer score: " <> TS.showt model.gameState.computer.score,
           spacer,
-          hstack
-            [ label $ "Click count: " <> TS.showt model.clickCount,
-              spacer,
-              button "Increase count" AppIncrease
-            ]
+          gameBoard wenv model
         ]
         `styleBasic` [padding 10]
 
@@ -50,7 +66,8 @@ handleEvent ::
   [AppEventResponse AppModel AppEvent]
 handleEvent wenv node model evt = case evt of
   AppInit -> []
-  AppIncrease -> [Model (model & #clickCount +~ 1)]
+  AppScene s -> case s of
+    SPickDealer -> []
 
 launchGUI :: IO ()
 launchGUI = do
