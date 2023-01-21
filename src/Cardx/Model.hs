@@ -28,17 +28,17 @@ import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
 import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
+import Data.Default.Class (Default (def))
+import Data.Generics.Labels ()
 import Data.Vector (Vector, (!), (!?))
 import Data.Vector qualified as V
 import Relude
-import Data.Generics.Labels ()
 
 data GameProgression = Win | InProgress | Lose deriving (Show, Eq, Generic)
 
 data Dealer = DPlayer | DComputer deriving (Show, Eq, Generic)
 
 data Turn = GTPlayer | GTComputer deriving (Show, Eq, Generic)
-
 
 data ColoredKind
   = CKActionCard ActionCard
@@ -61,6 +61,9 @@ data GamePlayer = GamePlayer
   }
   deriving (Show, Eq, Generic)
 
+instance Default GamePlayer where
+  def = GamePlayer {hand = V.empty, score = 0, drawCount = 0}
+
 data GameState = GameState
   { player :: GamePlayer,
     computer :: GamePlayer,
@@ -72,6 +75,19 @@ data GameState = GameState
     progression :: GameProgression
   }
   deriving (Show, Eq, Generic)
+
+instance Default GameState where
+  def =
+    GameState
+      { player = def,
+        computer = def,
+        wildcardColor = Nothing,
+        deck = makeDeck,
+        drawPile = V.empty,
+        turn = GTComputer,
+        dealer = DComputer,
+        progression = InProgress
+      }
 
 makeWilds :: WildKind -> Vector Card
 makeWilds x = V.replicate 4 (CWild (WildCard x CC.wildScore))
