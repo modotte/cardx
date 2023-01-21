@@ -34,17 +34,23 @@ data AppEvent
   deriving (Show, Eq)
 
 menuScene :: WidgetNode s AppEvent
-menuScene = button "Start game" (AppChangeScene SPickDealer)
+menuScene =
+  vstack
+    [ button "Start" (AppChangeScene SPickDealer)
+    ]
 
 endScene :: WidgetNode s AppEvent
 endScene =
   vstack
     [ label "You've TODO!!!",
-      button "Go back to menu" (AppChangeScene SMenu)
+      button "Go back to menu" (AppChangeScene SMenu),
+      button "Or start over?" (AppChangeScene SPickDealer)
     ]
 
+pickDealerScene :: WidgetNode s AppEvent
 pickDealerScene =
   vstack
+    -- TODO: Set a dealer
     [ button "Play!" (AppChangeScene SPlay)
     ]
 
