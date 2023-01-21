@@ -1,5 +1,6 @@
 module Cardx.GUI (launchGUI) where
 
+import Cardx.Constant qualified as CC
 import Cardx.Model
 import Control.Lens
 import Data.Default.Class qualified as D
@@ -29,7 +30,9 @@ buildUI wenv model = widgetTree
   where
     widgetTree =
       vstack
-        [ label "Hello world",
+        [ label $ "Win score: " <> TS.showt CC.maxScore,
+          label $ "Player score: " <> TS.showt model.gameState.player.score,
+          label $ "Computer score: " <> TS.showt model.gameState.computer.score,
           spacer,
           hstack
             [ label $ "Click count: " <> TS.showt model.clickCount,
