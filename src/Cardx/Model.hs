@@ -69,8 +69,8 @@ data GameState = GameState
   { player :: GamePlayer,
     computer :: GamePlayer,
     wildcardColor :: Maybe ColoredCard,
-    deck :: Vector Card,
-    drawPile :: Vector Card,
+    deck :: [Card],
+    drawPile :: [Card],
     turn :: Turn,
     dealer :: Dealer,
     progression :: GameProgression
@@ -83,8 +83,8 @@ instance Default GameState where
       { player = def,
         computer = def,
         wildcardColor = Nothing,
-        deck = makeDeck,
-        drawPile = V.empty,
+        deck = [],
+        drawPile = [],
         turn = GTComputer,
         dealer = DComputer,
         progression = InProgress
@@ -117,8 +117,8 @@ makeColoreds =
           ActionCard {kind = Draw2, score = CC.actionScore}
         ]
 
-makeDeck :: Vector Card
-makeDeck = V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
+makeDeck :: [Card]
+makeDeck = V.toList $ V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
 
 coloredScore :: ColoredCard -> Natural
 coloredScore =
@@ -142,5 +142,5 @@ nextTurn :: Turn -> Turn
 nextTurn GTComputer = GTPlayer
 nextTurn GTPlayer = GTComputer
 
-drawACardFromDeck :: Vector Card -> Vector Card -> Maybe (Vector Card, Vector Card)
+drawACardFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
 drawACardFromDeck from to = Nothing
