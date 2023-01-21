@@ -20,7 +20,7 @@ module Cardx.Model
     pickDealer,
     nextTurn,
     firstTurn,
-    drawACardFromDeck,
+    drawCardFromDeck,
   )
 where
 
@@ -147,6 +147,6 @@ firstTurn :: Dealer -> Turn
 firstTurn DComputer = GTPlayer
 firstTurn DPlayer = GTComputer
 
-drawACardFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
-drawACardFromDeck [] _ = Nothing
-drawACardFromDeck (x : xs) hand = Just (xs, hand <> V.fromList [x])
+drawCardFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
+drawCardFromDeck [] _ = Nothing
+drawCardFromDeck (x : xs) hand = Just (xs, hand <> V.fromList [x])

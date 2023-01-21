@@ -125,8 +125,8 @@ handleEvent wenv node model evt = case evt of
     ]
     where
       -- TODO: Make sure to shuffle deck pre-and-post dealing.
-      (xs, ph) = fromMaybe ([], V.empty) (drawACardFromDeck model.gameState.deck V.empty)
-      (_, ch) = fromMaybe ([], V.empty) (drawACardFromDeck xs V.empty)
+      (xs, ph) = fromMaybe ([], V.empty) (drawCardFromDeck model.gameState.deck V.empty)
+      (_, ch) = fromMaybe ([], V.empty) (drawCardFromDeck xs V.empty)
       pc = ph ! 0
       cc = ch ! 0
       dealer = pickDealer pc cc

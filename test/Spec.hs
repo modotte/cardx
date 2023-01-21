@@ -286,11 +286,11 @@ main = hspec $ do
   it "firstTurn" $ do
     CM.firstTurn DComputer `shouldBe` GTPlayer
 
-  it "drawACardFromDeck" $
+  it "drawCardFromDeck" $
     do
       let from = [CWild (WildCard Wild 0), CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]
           to = V.empty
-      CM.drawACardFromDeck from to
+      CM.drawCardFromDeck from to
       `shouldBe` Just
         ( [CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)],
           V.fromList [CWild (WildCard Wild 0)]
