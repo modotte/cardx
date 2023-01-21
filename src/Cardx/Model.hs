@@ -83,7 +83,7 @@ instance Default GameState where
       { player = def,
         computer = def,
         wildcardColor = Nothing,
-        deck = [],
+        deck = makeDeck,
         drawPile = [],
         turn = GTComputer,
         dealer = DComputer,

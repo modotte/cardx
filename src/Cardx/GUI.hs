@@ -5,11 +5,14 @@ module Cardx.GUI (launchGUI) where
 
 import Cardx.Constant qualified as CC
 import Cardx.Model
+import Cardx.WildKind (WildKind (Wild))
 import Control.Lens
 import Data.Default.Class qualified as D
 import Data.Generics.Labels ()
 import Data.Text (Text)
 import Data.Text qualified as T
+import Data.Vector (Vector, (!), (!?))
+import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
 import Relude hiding ((&))
@@ -17,7 +20,8 @@ import TextShow qualified as TS
 
 data AppModel = AppModel
   { gameState :: GameState,
-    currentScene :: Scene
+    currentScene :: Scene,
+    hasPickedDealer :: Bool
   }
   deriving (Show, Eq, Generic)
 
@@ -30,6 +34,7 @@ data Scene
 
 data AppEvent
   = AppInit
+  | AppPickDealer
   | AppChangeScene Scene
   deriving (Show, Eq)
 
@@ -47,11 +52,12 @@ endScene =
       button "Or start over?" (AppChangeScene SPickDealer)
     ]
 
-pickDealerScene :: WidgetNode s AppEvent
-pickDealerScene =
+pickDealerScene model =
   vstack
     -- TODO: Set a dealer
-    [ button "Play!" (AppChangeScene SPlay)
+    [ if model.hasPickedDealer
+        then button "Play!" (AppChangeScene SPlay)
+        else button "Pick a dealer" AppPickDealer
     ]
 
 gameBoard :: p1 -> p2 -> WidgetNode s AppEvent
@@ -93,14 +99,14 @@ buildUI wenv model = widgetTree
       vstack
         [ case model.currentScene of
             SMenu -> menuScene
-            SPickDealer -> pickDealerScene
+            SPickDealer -> pickDealerScene model
             SPlay -> playScene wenv model
             SEnd -> endScene
         ]
         `styleBasic` [padding 10]
 
 initialModel :: AppModel
-initialModel = AppModel D.def SMenu
+initialModel = AppModel D.def SMenu False
 
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
@@ -110,11 +116,18 @@ handleEvent ::
   [AppEventResponse AppModel AppEvent]
 handleEvent wenv node model evt = case evt of
   AppInit -> []
+  AppPickDealer ->
+    [Model $ model & #hasPickedDealer .~ True & #gameState . #dealer .~ pickDealer pc cc]
+    where
+      -- TODO: Make sure to shuffle deck pre-and-post dealing.
+      (xs, ph) = fromMaybe ([], V.empty) (drawACardFromDeck model.gameState.deck V.empty)
+      (_, ch) = fromMaybe ([], V.empty) (drawACardFromDeck xs V.empty)
+      pc = ph ! 0
+      cc = ch ! 0
   AppChangeScene scene ->
     let changeScene s = model & #currentScene .~ s
      in case scene of
           SMenu -> [Model initialModel]
-          -- TODO: Make sure to shuffle deck pre-and-post dealing.
           SPickDealer -> [Model $ changeScene SPickDealer]
           SPlay -> [Model $ changeScene SPlay]
           SEnd -> [Model $ changeScene SEnd]
