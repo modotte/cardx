@@ -19,6 +19,7 @@ module Cardx.Model
     cardScore,
     pickDealer,
     nextTurn,
+    firstTurn,
     drawACardFromDeck,
   )
 where
@@ -95,7 +96,7 @@ makeWilds x = V.replicate 4 (CWild (WildCard x CC.wildScore))
 
 makeRange :: Natural -> (Natural -> a) -> Vector a -> Vector a
 makeRange from f xs =
-  V.concat [xs, V.fromList $ map f [from .. 9]]
+  V.concat [xs, V.fromList $ fmap f [from .. 9]]
 
 makeColoredCardSet :: Natural -> (ColoredKind -> ColoredCard) -> Vector ActionCard -> Vector ColoredCard
 makeColoredCardSet from color =
@@ -141,6 +142,10 @@ pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer
 nextTurn :: Turn -> Turn
 nextTurn GTComputer = GTPlayer
 nextTurn GTPlayer = GTComputer
+
+firstTurn :: Dealer -> Turn
+firstTurn DComputer = GTPlayer
+firstTurn DPlayer = GTComputer
 
 drawACardFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
 drawACardFromDeck [] _ = Nothing

@@ -283,6 +283,9 @@ main = hspec $ do
   it "nextTurn" $ do
     CM.nextTurn GTComputer `shouldBe` GTPlayer
 
+  it "firstTurn" $ do
+    CM.firstTurn DComputer `shouldBe` GTPlayer
+
   it "drawACardFromDeck" $
     do
       let from = [CWild (WildCard Wild 0), CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]

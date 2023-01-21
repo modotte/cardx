@@ -117,13 +117,19 @@ handleEvent ::
 handleEvent wenv node model evt = case evt of
   AppInit -> []
   AppPickDealer ->
-    [Model $ model & #hasPickedDealer .~ True & #gameState . #dealer .~ pickDealer pc cc]
+    [ Model $
+        model
+          & #hasPickedDealer .~ True
+          & #gameState . #dealer .~ dealer
+          & #gameState . #turn .~ firstTurn dealer
+    ]
     where
       -- TODO: Make sure to shuffle deck pre-and-post dealing.
       (xs, ph) = fromMaybe ([], V.empty) (drawACardFromDeck model.gameState.deck V.empty)
       (_, ch) = fromMaybe ([], V.empty) (drawACardFromDeck xs V.empty)
       pc = ph ! 0
       cc = ch ! 0
+      dealer = pickDealer pc cc
   AppChangeScene scene ->
     let changeScene s = model & #currentScene .~ s
      in case scene of
