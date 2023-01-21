@@ -99,6 +99,9 @@ buildUI wenv model = widgetTree
         ]
         `styleBasic` [padding 10]
 
+initialModel :: AppModel
+initialModel = AppModel D.def SMenu
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -110,7 +113,7 @@ handleEvent wenv node model evt = case evt of
   AppChangeScene scene ->
     let changeScene s = model & #currentScene .~ s
      in case scene of
-          SMenu -> [Model $ changeScene SMenu]
+          SMenu -> [Model initialModel]
           -- TODO: Make sure to shuffle deck pre-and-post dealing.
           SPickDealer -> [Model $ changeScene SPickDealer]
           SPlay -> [Model $ changeScene SPlay]
@@ -120,7 +123,7 @@ launchGUI :: IO ()
 launchGUI = do
   startApp model handleEvent buildUI config
   where
-    model = AppModel D.def SMenu
+    model = initialModel
     config =
       [ appWindowTitle "Cardx",
         appTheme darkTheme,
