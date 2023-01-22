@@ -35,6 +35,7 @@ data Scene
 data AppEvent
   = AppInit
   | AppPickDealer
+  | AppDealCards
   | AppChangeScene Scene
   deriving (Show, Eq)
 
@@ -131,6 +132,7 @@ handleEvent wenv node model evt = case evt of
       pc = ph ! 0
       cc = ch ! 0
       dealer = pickDealer pc cc
+  AppDealCards -> []
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
