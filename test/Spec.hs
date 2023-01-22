@@ -281,10 +281,10 @@ main = hspec $ do
     CM.pickDealer pc cc `shouldBe` DComputer
 
   it "nextTurn" $ do
-    CM.nextTurn GTComputer `shouldBe` GTPlayer
+    CM.nextTurn TComputer `shouldBe` TPlayer
 
   it "firstTurn" $ do
-    CM.firstTurn DComputer `shouldBe` GTPlayer
+    CM.firstTurn DComputer `shouldBe` TPlayer
 
   it "drawCardFromDeck" $
     do

@@ -52,9 +52,9 @@ endScene =
       button "Or start over?" (AppChangeScene SPickDealer)
     ]
 
+pickDealerScene :: HasField "hasPickedDealer" r Bool => r -> WidgetNode s AppEvent
 pickDealerScene model =
   vstack
-    -- TODO: Set a dealer
     [ if model.hasPickedDealer
         then button "Play!" (AppChangeScene SPlay)
         else button "Pick a dealer" AppPickDealer
@@ -84,8 +84,8 @@ playScene ::
 playScene wenv model =
   vstack
     [ label $ "Win score: " <> TS.showt CC.maxScore,
-      label $ "Player score: " <> TS.showt (model.gameState.player.score),
-      label $ "Computer score: " <> TS.showt (model.gameState.computer.score),
+      label $ "Player score: " <> TS.showt model.gameState.player.score,
+      label $ "Computer score: " <> TS.showt model.gameState.computer.score,
       spacer,
       gameBoard wenv model
     ]

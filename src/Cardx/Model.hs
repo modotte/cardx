@@ -40,7 +40,7 @@ data GameProgression = Win | InProgress | Lose deriving (Show, Eq, Generic)
 
 data Dealer = DPlayer | DComputer deriving (Show, Eq, Generic)
 
-data Turn = GTPlayer | GTComputer deriving (Show, Eq, Generic)
+data Turn = TPlayer | TComputer deriving (Show, Eq, Generic)
 
 data ColoredKind
   = CKActionCard ActionCard
@@ -86,7 +86,7 @@ instance Default GameState where
         wildcardColor = Nothing,
         deck = makeDeck,
         drawPile = [],
-        turn = GTComputer,
+        turn = TComputer,
         dealer = DComputer,
         progression = InProgress
       }
@@ -140,12 +140,12 @@ pickDealer :: Card -> Card -> Dealer
 pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer
 
 nextTurn :: Turn -> Turn
-nextTurn GTComputer = GTPlayer
-nextTurn GTPlayer = GTComputer
+nextTurn TComputer = TPlayer
+nextTurn TPlayer = TComputer
 
 firstTurn :: Dealer -> Turn
-firstTurn DComputer = GTPlayer
-firstTurn DPlayer = GTComputer
+firstTurn DComputer = TPlayer
+firstTurn DPlayer = TComputer
 
 drawCardFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
 drawCardFromDeck [] _ = Nothing
