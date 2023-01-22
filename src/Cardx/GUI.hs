@@ -62,11 +62,12 @@ pickDealerScene model =
 
 gameBoard :: p1 -> p2 -> WidgetNode s AppEvent
 gameBoard wenv model =
-  vstack
-    [ hstack [],
-      spacer,
-      hstack []
-    ]
+  scroll $
+    vstack
+      [ hstack [],
+        spacer,
+        hstack []
+      ]
 
 playScene ::
   ( TS.TextShow a1,
