@@ -286,7 +286,7 @@ main = hspec $ do
   it "firstTurn" $ do
     CM.firstTurn DComputer `shouldBe` TPlayer
 
-  it "drawNFromDeck" $ do
+  it "drawNFromDeck 1" $ do
     let from = [CWild (WildCard Wild 0), CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]
         to = V.empty
         f = execState (sequence $ CM.drawNFromDeck 1) $ Just (from, to)
@@ -296,3 +296,37 @@ main = hspec $ do
         ( [CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)],
           V.fromList [CWild (WildCard Wild 0)]
         )
+
+  it "drawNFromDeck 3" $ do
+    let from = [CWild (WildCard Wild 0), CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]
+        to = V.empty
+        f = execState (sequence $ CM.drawNFromDeck 3) $ Just (from, to)
+
+    f
+      `shouldBe` Just
+        ( [],
+          V.fromList
+            [ CWild
+                WildCard
+                  { kind = Wild,
+                    score = 0
+                  },
+              CWild
+                WildCard
+                  { kind = Wild,
+                    score = 0
+                  },
+              CWild
+                WildCard
+                  { kind = WildDraw4,
+                    score = 0
+                  }
+            ]
+        )
+
+  it "drawNFromDeck 10" $ do
+    let from = [CWild (WildCard Wild 0), CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]
+        to = V.empty
+        f = execState (sequence $ CM.drawNFromDeck 10) $ Just (from, to)
+
+    f `shouldBe` Nothing
