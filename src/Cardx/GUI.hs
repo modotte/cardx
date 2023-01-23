@@ -53,11 +53,22 @@ endScene =
       button "Or start over?" (AppChangeScene SPickDealer)
     ]
 
-pickDealerScene :: HasField "hasPickedDealer" r Bool => r -> WidgetNode s AppEvent
+pickDealerScene ::
+  ( TS.TextShow a,
+    HasField "turn" r1 a,
+    HasField "gameState" r2 r1,
+    HasField "hasPickedDealer" r2 Bool
+  ) =>
+  r2 ->
+  WidgetNode s AppEvent
 pickDealerScene model =
   vstack
     [ if model.hasPickedDealer
-        then button "Play!" (AppChangeScene SPlay)
+        then
+          vstack
+            [ label $ "Dealer of the game: " <> TS.showt model.gameState.turn,
+              button "Play!" (AppChangeScene SPlay)
+            ]
         else button "Pick a dealer" AppPickDealer
     ]
 
@@ -126,7 +137,8 @@ handleEvent wenv node model evt = case evt of
           & #gameState . #turn .~ firstTurn dealer
     ]
     where
-      -- TODO: Make sure to shuffle deck pre-and-post dealing.
+      -- TODO: Make sure to shuffle deck pre-and-post dealing, which in turn
+      -- will randomize the dealer and hands.
       (xs, ph) = fromMaybe ([], V.empty) (drawCardFromDeck model.gameState.deck V.empty)
       (_, ch) = fromMaybe ([], V.empty) (drawCardFromDeck xs V.empty)
       pc = ph ! 0

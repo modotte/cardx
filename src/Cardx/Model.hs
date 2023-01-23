@@ -35,12 +35,17 @@ import Data.Generics.Labels ()
 import Data.Vector (Vector, (!), (!?))
 import Data.Vector qualified as V
 import Relude
+import TextShow (TextShow, showt)
 
 data GameProgression = Win | InProgress | Lose deriving (Show, Eq, Generic)
 
 data Dealer = DPlayer | DComputer deriving (Show, Eq, Generic)
 
 data Turn = TPlayer | TComputer deriving (Show, Eq, Generic)
+
+instance TextShow Turn where
+  showt TPlayer = "Player"
+  showt TComputer = "Computer"
 
 data ColoredKind
   = CKActionCard ActionCard
