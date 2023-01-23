@@ -20,7 +20,8 @@ module Cardx.Model
     pickDealer,
     nextTurn,
     firstTurn,
-    drawCardFromDeck,
+    drawFromDeck,
+    drawNFromDeck,
   )
 where
 
@@ -152,6 +153,22 @@ firstTurn :: Dealer -> Turn
 firstTurn DComputer = TPlayer
 firstTurn DPlayer = TComputer
 
-drawCardFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
-drawCardFromDeck [] _ = Nothing
-drawCardFromDeck (x : xs) hand = Just (xs, hand <> V.fromList [x])
+drawFromDeck :: [Card] -> Vector Card -> Maybe ([Card], Vector Card)
+drawFromDeck [] _ = Nothing
+drawFromDeck (x : xs) hand = Just (xs, hand <> V.fromList [x])
+
+type DeckToHand = Maybe ([Card], Vector Card)
+
+drawOneAux :: DeckToHand -> DeckToHand
+drawOneAux Nothing = Nothing
+drawOneAux (Just ([], _)) = Nothing
+drawOneAux (Just (x : xs, h)) = Just (xs, h <> V.fromList [x])
+
+drawOne :: State DeckToHand DeckToHand
+drawOne = do
+  s <- get
+  put $ drawOneAux s
+  pure s
+
+drawNFromDeck :: Natural -> [State DeckToHand DeckToHand]
+drawNFromDeck n = replicate (fromInteger . toInteger $ n) drawOne

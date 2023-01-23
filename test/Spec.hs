@@ -286,11 +286,12 @@ main = hspec $ do
   it "firstTurn" $ do
     CM.firstTurn DComputer `shouldBe` TPlayer
 
-  it "drawCardFromDeck" $
-    do
-      let from = [CWild (WildCard Wild 0), CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]
-          to = V.empty
-      CM.drawCardFromDeck from to
+  it "drawNFromDeck" $ do
+    let from = [CWild (WildCard Wild 0), CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)]
+        to = V.empty
+        f = execState (sequence $ CM.drawNFromDeck 1) $ Just (from, to)
+
+    f
       `shouldBe` Just
         ( [CWild (WildCard Wild 0), CWild (WildCard WildDraw4 0)],
           V.fromList [CWild (WildCard Wild 0)]
