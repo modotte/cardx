@@ -36,6 +36,7 @@ data AppEvent
   = AppInit
   | AppPickDealer
   | AppDealCards
+  | AppClickCard Card
   | AppChangeScene Scene
   deriving (Show, Eq)
 
@@ -120,6 +121,21 @@ buildUI wenv model = widgetTree
 
 initialModel :: AppModel
 initialModel = AppModel D.def SMenu False
+
+cardAsButton :: Card -> WidgetNode s AppEvent
+cardAsButton card =
+  let result evt = case card of
+        CWild wc ->
+          case wc of WildCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor black]
+        CColored cc ->
+          case cc of
+            RedCard rc ->
+              let color = red
+               in case rc of
+                    CKActionCard ac ->
+                      case ac of
+                        ActionCard {kind = k, score = s} -> button "" evt `styleBasic` [textColor white, bgColor red]
+   in result $ AppClickCard card
 
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
