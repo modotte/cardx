@@ -146,7 +146,17 @@ handleEvent wenv node model evt = case evt of
       pc = ph ! 0
       cc = ch ! 0
       dealer = pickDealer pc cc
-  AppDealCards -> []
+  AppDealCards ->
+    [ Model $
+        model
+          & #gameState . #player . #hand .~ ph
+          & #gameState . #computer . #hand .~ ch
+          & #gameState . #deck .~ xs'
+    ]
+    where
+      f = execState (sequence $ drawNFromDeck 7) . Just
+      (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
+      (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
