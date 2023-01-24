@@ -75,9 +75,12 @@ pickDealerScene model =
         else button "Pick a dealer" AppPickDealer
     ]
 
+cardTextColor :: [StyleState]
+cardTextColor = [textColor white]
+
 wildCardAsButton :: Typeable e => WildCard -> e -> WidgetNode s e
 wildCardAsButton (WildCard {kind = k, score = s}) evt =
-  button (TS.showt k) evt `styleBasic` [textColor white, bgColor black]
+  button (TS.showt k) evt `styleBasic` [bgColor black] <> cardTextColor
 
 coloredKindAsButton :: Typeable e => ColoredKind -> e -> WidgetNode s e
 coloredKindAsButton (CKActionCard (ActionCard {kind = k, score = s})) = button (TS.showt k)
@@ -85,13 +88,13 @@ coloredKindAsButton (CKFaceCard (FaceCard {kind = k, score = s})) = button (TS.s
 
 coloredCardAsButton :: Typeable e => ColoredCard -> e -> WidgetNode s e
 coloredCardAsButton (RedCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor red]
+  coloredKindAsButton x evt `styleBasic` [bgColor red] <> cardTextColor
 coloredCardAsButton (YellowCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor yellow]
+  coloredKindAsButton x evt `styleBasic` [bgColor yellow] <> cardTextColor
 coloredCardAsButton (GreenCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor green]
+  coloredKindAsButton x evt `styleBasic` [bgColor green] <> cardTextColor
 coloredCardAsButton (BlueCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor blue]
+  coloredKindAsButton x evt `styleBasic` [bgColor blue] <> cardTextColor
 
 cardAsButton :: Card -> WidgetNode s AppEvent
 cardAsButton card@Card {id = idx, kind = ck} =
