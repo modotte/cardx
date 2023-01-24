@@ -75,25 +75,29 @@ pickDealerScene model =
         else button "Pick a dealer" AppPickDealer
     ]
 
-coloredCardAsButton :: Typeable e => ColoredKind -> e -> WidgetNode s e
-coloredCardAsButton (CKActionCard (ActionCard {kind = k, score = s})) = button (TS.showt k)
-coloredCardAsButton (CKFaceCard (FaceCard {kind = k, score = s})) = button (TS.showt k)
+wildCardAsButton :: Typeable e => WildCard -> e -> WidgetNode s e
+wildCardAsButton (WildCard {kind = k, score = s}) evt =
+  button (TS.showt k) evt `styleBasic` [textColor white, bgColor black]
+
+coloredKindAsButton :: Typeable e => ColoredKind -> e -> WidgetNode s e
+coloredKindAsButton (CKActionCard (ActionCard {kind = k, score = s})) = button (TS.showt k)
+coloredKindAsButton (CKFaceCard (FaceCard {kind = k, score = s})) = button (TS.showt k)
+
+coloredCardAsButton :: Typeable e => ColoredCard -> e -> WidgetNode s e
+coloredCardAsButton (RedCard x) evt =
+  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor red]
+coloredCardAsButton (YellowCard x) evt =
+  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor yellow]
+coloredCardAsButton (GreenCard x) evt =
+  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor green]
+coloredCardAsButton (BlueCard x) evt =
+  coloredKindAsButton x evt `styleBasic` [textColor white, bgColor blue]
 
 cardAsButton :: Card -> WidgetNode s AppEvent
-cardAsButton card =
-  let result evt =
-        case card of
-          Card {id = idx, kind = k} ->
-            case k of
-              CWild wk ->
-                case wk of WildCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor black]
-              CColored cc ->
-                case cc of
-                  RedCard x -> coloredCardAsButton x evt
-                  YellowCard x -> coloredCardAsButton x evt
-                  GreenCard x -> coloredCardAsButton x evt
-                  BlueCard x -> coloredCardAsButton x evt
-   in result $ AppClickCard card
+cardAsButton card@Card {id = idx, kind = ck} =
+  case ck of
+    CWild x -> wildCardAsButton x $ AppClickCard card
+    CColored x -> coloredCardAsButton x $ AppClickCard card
 
 gameBoard ::
   ( HasField "hand" r1 (Vector Card),
