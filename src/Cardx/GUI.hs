@@ -75,6 +75,10 @@ pickDealerScene model =
         else button "Pick a dealer" AppPickDealer
     ]
 
+coloredCardAsButton :: Typeable e => ColoredKind -> e -> WidgetNode s e
+coloredCardAsButton (CKActionCard (ActionCard {kind = k, score = s})) = button (TS.showt k)
+coloredCardAsButton (CKFaceCard (FaceCard {kind = k, score = s})) = button (TS.showt k)
+
 cardAsButton :: Card -> WidgetNode s AppEvent
 cardAsButton card =
   let result evt =
@@ -85,12 +89,10 @@ cardAsButton card =
                 case wk of WildCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor black]
               CColored cc ->
                 case cc of
-                  RedCard rc ->
-                    let color = red
-                     in case rc of
-                          CKActionCard ac ->
-                            case ac of
-                              ActionCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor red]
+                  RedCard x -> coloredCardAsButton x evt
+                  YellowCard x -> coloredCardAsButton x evt
+                  GreenCard x -> coloredCardAsButton x evt
+                  BlueCard x -> coloredCardAsButton x evt
    in result $ AppClickCard card
 
 gameBoard ::
@@ -189,6 +191,7 @@ handleEvent wenv node model evt = case evt of
       f = execState (sequence $ drawNFromDeck 7) . Just
       (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
       (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
+  AppClickCard c -> []
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
