@@ -112,10 +112,10 @@ gameBoard ::
 gameBoard wenv model =
   scroll $
     vstack
-      [ hstack $ fmap cardAsButton (V.toList model.gameState.computer.hand),
+      [ hstack $ cardAsButton <$> V.toList model.gameState.computer.hand,
         spacer,
         spacer,
-        hstack $ fmap cardAsButton (V.toList model.gameState.player.hand)
+        hstack $ cardAsButton <$> V.toList model.gameState.player.hand
       ]
 
 playScene ::
