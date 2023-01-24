@@ -134,7 +134,7 @@ cardAsButton card =
                in case rc of
                     CKActionCard ac ->
                       case ac of
-                        ActionCard {kind = k, score = s} -> button "" evt `styleBasic` [textColor white, bgColor red]
+                        ActionCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor red]
    in result $ AppClickCard card
 
 handleEvent ::
