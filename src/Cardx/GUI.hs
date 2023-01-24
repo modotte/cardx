@@ -103,9 +103,13 @@ cardAsButton card@Card {id = idx, kind = ck} =
     CColored x -> coloredCardAsButton x $ AppClickCard card
 
 gameBoard ::
-  ( HasField "hand" r1 (Vector Card),
+  ( Traversable t1,
+    Traversable t2,
+    HasField "hand" r1 (Vector Card),
     HasField "hand" r2 (Vector Card),
     HasField "computer" r3 r2,
+    HasField "deck" r3 (t1 Card),
+    HasField "drawPile" r3 (t2 Card),
     HasField "player" r3 r1,
     HasField "gameState" r4 r3
   ) =>
@@ -117,19 +121,28 @@ gameBoard wenv model =
     vstack
       [ hstack $ cardAsButton <$> V.toList model.gameState.computer.hand,
         spacer,
+        vstack
+          [ hstack $ cardAsButton <$> model.gameState.deck,
+            spacer,
+            hstack $ cardAsButton <$> model.gameState.drawPile
+          ],
         spacer,
         hstack $ cardAsButton <$> V.toList model.gameState.player.hand
       ]
       `styleBasic` [padding 10]
 
 playScene ::
-  ( TS.TextShow a1,
+  ( Traversable t2,
+    Traversable t1,
+    TS.TextShow a1,
     TS.TextShow a2,
     HasField "score" r1 a1,
     HasField "score" r2 a2,
     HasField "hand" r2 (Vector Card),
     HasField "hand" r1 (Vector Card),
     HasField "computer" r3 r2,
+    HasField "deck" r3 (t1 Card),
+    HasField "drawPile" r3 (t2 Card),
     HasField "player" r3 r1,
     HasField "gameState" r4 r3
   ) =>
@@ -193,12 +206,14 @@ handleEvent wenv node model evt = case evt of
         model
           & #gameState . #player . #hand .~ ph
           & #gameState . #computer . #hand .~ ch
-          & #gameState . #deck .~ xs'
+          & #gameState . #deck .~ xs''
+          & #gameState . #drawPile .~ [topCard ! 0]
     ]
     where
       f = execState (sequence $ drawNFromDeck 7) . Just
       (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
       (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
+      (xs'', topCard) = fromMaybe ([], V.empty) $ f (xs', V.empty)
   AppClickCard c -> []
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
