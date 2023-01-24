@@ -7,6 +7,7 @@ module Cardx.Model
     FaceCard (..),
     ColoredKind (..),
     ColoredCard (..),
+    CardKind (..),
     Card (..),
     GamePlayer (..),
     GameState (..),
@@ -59,7 +60,9 @@ data ColoredCard
   | BlueCard ColoredKind
   deriving (Show, Eq, Generic)
 
-data Card = CWild WildCard | CColored ColoredCard deriving (Show, Eq, Generic)
+data CardKind = CWild WildCard | CColored ColoredCard deriving (Show, Eq, Generic)
+
+data Card = Card {id :: Natural, kind :: CardKind} deriving (Show, Eq, Generic)
 
 data GamePlayer = GamePlayer
   { hand :: Vector Card,
@@ -97,24 +100,23 @@ instance Default GameState where
       }
 
 makeWilds :: WildKind -> Vector Card
-makeWilds x = V.replicate 4 (CWild (WildCard x CC.wildScore))
+makeWilds x = V.replicate 4 (Card {id = 0, kind = CWild (WildCard x CC.wildScore)})
 
 makeRange :: Natural -> (Natural -> a) -> Vector a -> Vector a
 makeRange from f xs =
   V.concat [xs, V.fromList $ fmap f [from .. 9]]
 
-makeColoredCardSet :: Natural -> (ColoredKind -> ColoredCard) -> Vector ActionCard -> Vector ColoredCard
+makeColoredCardSet :: Natural -> (ColoredKind -> ColoredCard) -> Vector ActionCard -> Vector Card
 makeColoredCardSet from color =
   faces . actions
   where
-    actions = V.map (color . CKActionCard)
-    faces = makeRange from (\x -> color (CKFaceCard (FaceCard x x)))
+    actions = V.map (\x -> Card {id = 0, kind = CColored (color (CKActionCard x))})
+    faces = makeRange from (\x -> Card {id = 0, kind = CColored (color (CKFaceCard (FaceCard x x)))})
 
 makeColoreds :: Vector Card
 makeColoreds =
-  V.concatMap (\i -> V.concatMap (\x -> ofCColoredCards $ makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
+  V.concatMap (\i -> V.concatMap (\x -> makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
   where
-    ofCColoredCards = V.map CColored
     colors = V.fromList [RedCard, YellowCard, GreenCard, BlueCard]
     acs =
       V.fromList
@@ -124,7 +126,10 @@ makeColoreds =
         ]
 
 makeDeck :: [Card]
-makeDeck = V.toList $ V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
+makeDeck = V.toList cardsidx
+  where
+    cardsidx = V.imap (\i x -> Card {id = fromInteger . toInteger $ i, kind = x.kind}) cards
+    cards = V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
 
 coloredScore :: ColoredCard -> Natural
 coloredScore =
@@ -138,8 +143,8 @@ coloredScore =
     g (BlueCard c) = c
 
 cardScore :: Card -> Natural
-cardScore (CWild (WildCard {kind = _, score = s})) = s
-cardScore (CColored cc) = coloredScore cc
+cardScore (Card {id = _, kind = CWild (WildCard {kind = _, score = s})}) = s
+cardScore (Card {id = _, kind = (CColored cc)}) = coloredScore cc
 
 pickDealer :: Card -> Card -> Dealer
 pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer
