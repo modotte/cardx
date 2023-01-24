@@ -164,8 +164,8 @@ handleEvent wenv node model evt = case evt of
         model
           & #hasPickedDealer .~ True
           & #gameState . #dealer .~ dealer
-          & #gameState . #turn .~ firstTurn dealer
-          & #gameState . #player . #hand .~ V.fromList [CWild (WildCard {kind = Wild, score = 3}), CColored (RedCard (CKActionCard (ActionCard {kind = Skip, score = 20})))]
+          & #gameState . #turn .~ firstTurn dealer,
+      Event AppDealCards
     ]
     where
       -- TODO: Make sure to shuffle deck pre-and-post dealing, which in turn
