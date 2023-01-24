@@ -120,6 +120,7 @@ gameBoard wenv model =
         spacer,
         hstack $ cardAsButton <$> V.toList model.gameState.player.hand
       ]
+      `styleBasic` [padding 10]
 
 playScene ::
   ( TS.TextShow a1,
