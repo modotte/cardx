@@ -1,8 +1,10 @@
+{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 
 module Cardx.GUI (launchGUI) where
 
+import Cardx.ActionKind (ActionKind (Skip))
 import Cardx.Constant qualified as CC
 import Cardx.Model
 import Cardx.WildKind (WildKind (Wild))
@@ -73,13 +75,38 @@ pickDealerScene model =
         else button "Pick a dealer" AppPickDealer
     ]
 
-gameBoard :: p1 -> p2 -> WidgetNode s AppEvent
+cardAsButton :: Card -> WidgetNode s AppEvent
+cardAsButton card =
+  let result evt = case card of
+        CWild wc ->
+          case wc of WildCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor black]
+        CColored cc ->
+          case cc of
+            RedCard rc ->
+              let color = red
+               in case rc of
+                    CKActionCard ac ->
+                      case ac of
+                        ActionCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor red]
+   in result $ AppClickCard card
+
+gameBoard ::
+  ( HasField "hand" r1 (Vector Card),
+    HasField "hand" r2 (Vector Card),
+    HasField "computer" r3 r2,
+    HasField "player" r3 r1,
+    HasField "gameState" r4 r3
+  ) =>
+  p ->
+  r4 ->
+  WidgetNode s AppEvent
 gameBoard wenv model =
   scroll $
     vstack
-      [ hstack [],
+      [ hstack $ fmap cardAsButton (V.toList model.gameState.computer.hand),
         spacer,
-        hstack []
+        spacer,
+        hstack $ fmap cardAsButton (V.toList model.gameState.player.hand)
       ]
 
 playScene ::
@@ -87,12 +114,14 @@ playScene ::
     TS.TextShow a2,
     HasField "score" r1 a1,
     HasField "score" r2 a2,
-    HasField "computer" r3 r1,
-    HasField "player" r3 r2,
-    HasField "gameState" p2 r3
+    HasField "hand" r2 (Vector Card),
+    HasField "hand" r1 (Vector Card),
+    HasField "computer" r3 r2,
+    HasField "player" r3 r1,
+    HasField "gameState" r4 r3
   ) =>
-  p1 ->
-  p2 ->
+  p ->
+  r4 ->
   WidgetNode s AppEvent
 playScene wenv model =
   vstack
@@ -122,21 +151,6 @@ buildUI wenv model = widgetTree
 initialModel :: AppModel
 initialModel = AppModel D.def SMenu False
 
-cardAsButton :: Card -> WidgetNode s AppEvent
-cardAsButton card =
-  let result evt = case card of
-        CWild wc ->
-          case wc of WildCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor black]
-        CColored cc ->
-          case cc of
-            RedCard rc ->
-              let color = red
-               in case rc of
-                    CKActionCard ac ->
-                      case ac of
-                        ActionCard {kind = k, score = s} -> button (TS.showt k) evt `styleBasic` [textColor white, bgColor red]
-   in result $ AppClickCard card
-
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -151,6 +165,7 @@ handleEvent wenv node model evt = case evt of
           & #hasPickedDealer .~ True
           & #gameState . #dealer .~ dealer
           & #gameState . #turn .~ firstTurn dealer
+          & #gameState . #player . #hand .~ V.fromList [CWild (WildCard {kind = Wild, score = 3}), CColored (RedCard (CKActionCard (ActionCard {kind = Skip, score = 20})))]
     ]
     where
       -- TODO: Make sure to shuffle deck pre-and-post dealing, which in turn
@@ -159,9 +174,7 @@ handleEvent wenv node model evt = case evt of
       f = execState (sequence $ drawNFromDeck 1) . Just
       (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
       (_, ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
-      pc = ph ! 0
-      cc = ch ! 0
-      dealer = pickDealer pc cc
+      dealer = pickDealer (ph ! 0) (ch ! 0)
   AppDealCards ->
     [ Model $
         model
