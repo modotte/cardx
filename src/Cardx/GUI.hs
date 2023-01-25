@@ -163,10 +163,16 @@ playScene wenv model =
       gameBoard wenv model
     ]
 
-pickWildCardColorScene :: p -> WidgetNode s AppEvent
+pickWildCardColorScene ::
+  ( HasField "gameState" p r,
+    HasField "wildcardKind" r (Maybe a),
+    TS.TextShow a
+  ) =>
+  p ->
+  WidgetNode s AppEvent
 pickWildCardColorScene model =
   vstack
-    [ label "Pick Wildcard color",
+    [ label $ "Pick " <> kindText,
       spacer,
       button "" (AppPickWildCardColor (RedCard defaultColoredKind)) `styleBasic` [bgColor red],
       button "" (AppPickWildCardColor (YellowCard defaultColoredKind)) `styleBasic` [bgColor yellow],
@@ -174,6 +180,7 @@ pickWildCardColorScene model =
       button "" (AppPickWildCardColor (BlueCard defaultColoredKind)) `styleBasic` [bgColor blue]
     ]
   where
+    kindText = maybe "" TS.showt (model.gameState.wildcardKind)
     defaultColoredKind = CKFaceCard (FaceCard {kind = 0, score = 1})
 
 buildUI ::
@@ -246,14 +253,13 @@ handleEvent wenv node model evt = case evt of
                 -- This cannot fail (player selection), so we default to the same card
                 ndp = [selectedCard] <> model.gameState.drawPile
                 model' =
-                  [ Model $
-                      model
-                        & #gameState . #player . #hand .~ nh
-                        & #gameState . #drawPile .~ ndp
-                  ]
+                  model
+                    & #gameState . #player . #hand .~ nh
+                    & #gameState . #drawPile .~ ndp
              in case selectedCardKind of
-                  CWild _ -> model' <> [Event $ AppChangeScene SPickWildCardColor]
-                  CColored _ -> model'
+                  CWild (WildCard {kind = k, score = _}) ->
+                    [Model $ model' & #gameState . #wildcardKind .~ Just k, Event $ AppChangeScene SPickWildCardColor]
+                  CColored _ -> [Model model']
           else []
   AppPickWildCardColor cc ->
     [ Model $ model & #gameState . #wildcardColor .~ Just cc,
