@@ -221,20 +221,18 @@ handleEvent wenv node model evt = case evt of
         let hc = fromMaybe card $ V.find (\x -> x.id == idx) model.gameState.player.hand
          in case getCardColor hc of
               Nothing -> []
-              Just x -> case getCardColor card of
-                Nothing -> []
-                Just y ->
-                  if eqColor x y
-                    then
-                      let nh = V.filter (\x -> x.id /= idx) model.gameState.player.hand
-                          -- This cannot fail (player selection), so we default to the same card
-                          nc = [hc] <> model.gameState.drawPile
-                       in [ Model $
-                              model
-                                & #gameState . #player . #hand .~ nh
-                                & #gameState . #drawPile .~ nc
-                          ]
-                    else []
+              Just x ->
+                if eqColor x cc
+                  then
+                    let nh = V.filter (\c -> c.id /= idx) model.gameState.player.hand
+                        -- This cannot fail (player selection), so we default to the same card
+                        nc = [hc] <> model.gameState.drawPile
+                     in [ Model $
+                            model
+                              & #gameState . #player . #hand .~ nh
+                              & #gameState . #drawPile .~ nc
+                        ]
+                  else []
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
