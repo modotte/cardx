@@ -78,6 +78,7 @@ pickDealerScene model =
 cardTextColor :: [StyleState]
 cardTextColor = [textColor white]
 
+-- TODO: Show score on cards
 wildCardAsButton :: Typeable e => WildCard -> e -> WidgetNode s e
 wildCardAsButton (WildCard {kind = k, score = s}) evt =
   button (TS.showt k) evt `styleBasic` [bgColor black] <> cardTextColor
@@ -97,7 +98,7 @@ coloredCardAsButton (BlueCard x) evt =
   coloredKindAsButton x evt `styleBasic` [bgColor blue] <> cardTextColor
 
 cardAsButton :: Card -> WidgetNode s AppEvent
-cardAsButton card@Card {id = idx, kind = ck} =
+cardAsButton card@Card {id = _, kind = ck} =
   case ck of
     CWild x -> wildCardAsButton x $ AppClickCard card
     CColored x -> coloredCardAsButton x $ AppClickCard card
@@ -219,25 +220,19 @@ handleEvent wenv node model evt = case evt of
       (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
       (xs', ch) = unsafeF n (xs, V.empty)
       (xs'', tc) = unsafeF 1 (xs', V.empty)
-  AppClickCard card@Card {id = idx, kind = ck} ->
-    case ck of
-      CWild _ -> []
-      CColored cc ->
-        let hc = fromMaybe card $ V.find (\x -> x.id == idx) model.gameState.player.hand
-         in case getCardColor hc of
-              Nothing -> []
-              Just x ->
-                if eqColor x cc
-                  then
-                    let nh = V.filter (\c -> c.id /= idx) model.gameState.player.hand
-                        -- This cannot fail (player selection), so we default to the same card
-                        nc = [hc] <> model.gameState.drawPile
-                     in [ Model $
-                            model
-                              & #gameState . #player . #hand .~ nh
-                              & #gameState . #drawPile .~ nc
-                        ]
-                  else []
+  AppClickCard selectedCard@Card {id = idx, kind = _} ->
+    let (drawPileTopCard : _) = model.gameState.drawPile
+     in if isMatchShape selectedCard drawPileTopCard
+          then
+            let nh = V.filter (\c -> c.id /= idx) model.gameState.player.hand
+                -- This cannot fail (player selection), so we default to the same card
+                ndp = [selectedCard] <> model.gameState.drawPile
+             in [ Model $
+                    model
+                      & #gameState . #player . #hand .~ nh
+                      & #gameState . #drawPile .~ ndp
+                ]
+          else []
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of

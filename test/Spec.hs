@@ -319,3 +319,27 @@ main = hspec $ do
         f = execState (sequence $ CM.drawNFromDeck 10) $ Just (from, to)
 
     f `shouldBe` Nothing
+
+  it "eqColor (same kind)" $ do
+    let x = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+        y = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 20}))
+
+    CM.eqColor x y `shouldBe` True
+
+  it "eqColor (different kind)" $ do
+    let x = RedCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+        y = RedCard (CKFaceCard (FaceCard {kind = 8, score = 20}))
+
+    CM.eqColor x y `shouldBe` True
+
+  it "isMatchShape (unmatching color)" $ do
+    let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
+        y = Card {id = 56, kind = CColored (RedCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
+
+    CM.isMatchShape x y `shouldBe` False
+
+  it "isMatchShape (colored and wildcard)" $ do
+    let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
+        y = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
+
+    CM.isMatchShape x y `shouldBe` True

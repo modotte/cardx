@@ -23,7 +23,7 @@ module Cardx.Model
     firstTurn,
     drawNFromDeck,
     eqColor,
-    getCardColor,
+    isMatchShape,
   )
 where
 
@@ -185,8 +185,14 @@ drawOne = do
 drawNFromDeck :: Natural -> [State DeckToHand DeckToHand]
 drawNFromDeck n = replicate (fromInteger . toInteger $ n) drawOne
 
-getCardColor :: Card -> Maybe ColoredCard
-getCardColor (Card {id = _, kind = k}) =
-  case k of
-    CWild _ -> Nothing
-    CColored cc -> Just cc
+-- TODO: Also check for matching facecard numbers and action type
+isMatchShape :: Card -> Card -> Bool
+isMatchShape
+  Card {id = _, kind = card1}
+  Card {id = _, kind = card2} =
+    case card1 of
+      CWild _ -> True
+      CColored cc1 ->
+        case card2 of
+          CWild _ -> True
+          CColored cc2 -> eqColor cc1 cc2
