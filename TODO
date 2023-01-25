@@ -1,1 +1,2 @@
 - Add id to card so we can let player or computer select duplicate cards
+- Hands should be hashmap or some sort

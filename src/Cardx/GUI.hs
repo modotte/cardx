@@ -207,14 +207,25 @@ handleEvent wenv node model evt = case evt of
           & #gameState . #player . #hand .~ ph
           & #gameState . #computer . #hand .~ ch
           & #gameState . #deck .~ xs''
-          & #gameState . #drawPile .~ [topCard ! 0]
+          & #gameState . #drawPile .~ [tc ! 0]
     ]
     where
       f = execState (sequence $ drawNFromDeck 7) . Just
       (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
       (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
-      (xs'', topCard) = fromMaybe ([], V.empty) $ f (xs', V.empty)
-  AppClickCard c -> []
+      (xs'', tc) = fromMaybe ([], V.empty) $ f (xs', V.empty)
+  AppClickCard card@Card {id = idx, kind = ck} ->
+    [ Model $
+        model
+          & #gameState . #player . #hand .~ nh
+          & #gameState . #drawPile .~ nc
+    ]
+    where
+      -- TODO: We should just turn hands to use hashmap instead anyways
+      nh = V.filter (\x -> x.id /= idx) model.gameState.player.hand
+      -- This cannot fail (player selection), so we default to the same card
+      ndp = fromMaybe card $ V.find (\x -> x.id == idx) model.gameState.player.hand
+      nc = [ndp] <> model.gameState.drawPile
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
