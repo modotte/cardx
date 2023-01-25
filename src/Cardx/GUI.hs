@@ -215,18 +215,26 @@ handleEvent wenv node model evt = case evt of
       (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
       (xs'', tc) = fromMaybe ([], V.empty) $ f (xs', V.empty)
   AppClickCard card@Card {id = idx, kind = ck} ->
-    [ Model $
-        model
-          & #gameState . #player . #hand .~ nh
-          & #gameState . #drawPile .~ nc
-    ]
-    where
-      -- TODO: We should just turn hands to use hashmap instead anyways
-      -- TODO: Disable when we click on other cards!
-      nh = V.filter (\x -> x.id /= idx) model.gameState.player.hand
-      -- This cannot fail (player selection), so we default to the same card
-      ndp = fromMaybe card $ V.find (\x -> x.id == idx) model.gameState.player.hand
-      nc = [ndp] <> model.gameState.drawPile
+    case ck of
+      CWild _ -> []
+      CColored cc ->
+        let hc = fromMaybe card $ V.find (\x -> x.id == idx) model.gameState.player.hand
+         in case getCardColor hc of
+              Nothing -> []
+              Just x -> case getCardColor card of
+                Nothing -> []
+                Just y ->
+                  if eqColor x y
+                    then
+                      let nh = V.filter (\x -> x.id /= idx) model.gameState.player.hand
+                          -- This cannot fail (player selection), so we default to the same card
+                          nc = [hc] <> model.gameState.drawPile
+                       in [ Model $
+                              model
+                                & #gameState . #player . #hand .~ nh
+                                & #gameState . #drawPile .~ nc
+                          ]
+                    else []
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of

@@ -23,6 +23,7 @@ module Cardx.Model
     firstTurn,
     drawNFromDeck,
     eqColor,
+    getCardColor,
   )
 where
 
@@ -183,3 +184,9 @@ drawOne = do
 
 drawNFromDeck :: Natural -> [State DeckToHand DeckToHand]
 drawNFromDeck n = replicate (fromInteger . toInteger $ n) drawOne
+
+getCardColor :: Card -> Maybe ColoredCard
+getCardColor (Card {id = _, kind = k}) =
+  case k of
+    CWild _ -> Nothing
+    CColored cc -> Just cc
