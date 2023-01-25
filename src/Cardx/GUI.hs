@@ -214,7 +214,7 @@ handleEvent wenv node model evt = case evt of
       (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
       (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
       (xs'', tc) = fromMaybe ([], V.empty) $ f (xs', V.empty)
-  AppClickCard card@Card {id = idx, kind = ck} ->
+  AppClickCard card@Card {id = idx, kind = _} ->
     [ Model $
         model
           & #gameState . #player . #hand .~ nh
@@ -222,6 +222,7 @@ handleEvent wenv node model evt = case evt of
     ]
     where
       -- TODO: We should just turn hands to use hashmap instead anyways
+      -- TODO: Disable when we click on other cards!
       nh = V.filter (\x -> x.id /= idx) model.gameState.player.hand
       -- This cannot fail (player selection), so we default to the same card
       ndp = fromMaybe card $ V.find (\x -> x.id == idx) model.gameState.player.hand
