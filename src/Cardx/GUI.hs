@@ -177,6 +177,9 @@ buildUI wenv model = widgetTree
 initialModel :: AppModel
 initialModel = AppModel D.def SMenu False
 
+unsafeF :: (t -> Maybe ([a1], Vector a2)) -> t -> ([a1], Vector a2)
+unsafeF f x = fromMaybe ([], V.empty) $ f x
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -198,8 +201,8 @@ handleEvent wenv node model evt = case evt of
       -- will randomize the dealer and hands.
 
       f = execState (sequence $ drawNFromDeck 1) . Just
-      (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
-      (_, ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
+      (xs, ph) = unsafeF f (model.gameState.deck, V.empty)
+      (_, ch) = unsafeF f (xs, V.empty)
       dealer = pickDealer (ph ! 0) (ch ! 0)
   AppDealCards ->
     [ Model $
@@ -211,9 +214,9 @@ handleEvent wenv node model evt = case evt of
     ]
     where
       f = execState (sequence $ drawNFromDeck 7) . Just
-      (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
-      (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
-      (xs'', tc) = fromMaybe ([], V.empty) $ f (xs', V.empty)
+      (xs, ph) = unsafeF f (model.gameState.deck, V.empty)
+      (xs', ch) = unsafeF f (xs, V.empty)
+      (xs'', tc) = unsafeF f (xs', V.empty)
   AppClickCard card@Card {id = idx, kind = ck} ->
     case ck of
       CWild _ -> []
