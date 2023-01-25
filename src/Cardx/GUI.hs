@@ -177,8 +177,10 @@ buildUI wenv model = widgetTree
 initialModel :: AppModel
 initialModel = AppModel D.def SMenu False
 
-unsafeF :: (t -> Maybe ([a1], Vector a2)) -> t -> ([a1], Vector a2)
-unsafeF f x = fromMaybe ([], V.empty) $ f x
+unsafeF :: Natural -> ([Card], Vector Card) -> ([Card], Vector Card)
+unsafeF n x =
+  fromMaybe ([], V.empty) $
+    (execState (sequence $ drawNFromDeck n) . Just) x
 
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
@@ -200,9 +202,9 @@ handleEvent wenv node model evt = case evt of
       -- TODO: Make sure to shuffle deck pre-and-post dealing, which in turn
       -- will randomize the dealer and hands.
 
-      f = execState (sequence $ drawNFromDeck 1) . Just
-      (xs, ph) = unsafeF f (model.gameState.deck, V.empty)
-      (_, ch) = unsafeF f (xs, V.empty)
+      n = 1
+      (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
+      (_, ch) = unsafeF n (xs, V.empty)
       dealer = pickDealer (ph ! 0) (ch ! 0)
   AppDealCards ->
     [ Model $
@@ -213,10 +215,10 @@ handleEvent wenv node model evt = case evt of
           & #gameState . #drawPile .~ [tc ! 0]
     ]
     where
-      f = execState (sequence $ drawNFromDeck 7) . Just
-      (xs, ph) = unsafeF f (model.gameState.deck, V.empty)
-      (xs', ch) = unsafeF f (xs, V.empty)
-      (xs'', tc) = unsafeF f (xs', V.empty)
+      n = 7
+      (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
+      (xs', ch) = unsafeF n (xs, V.empty)
+      (xs'', tc) = unsafeF n (xs', V.empty)
   AppClickCard card@Card {id = idx, kind = ck} ->
     case ck of
       CWild _ -> []
