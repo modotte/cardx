@@ -22,6 +22,7 @@ module Cardx.Model
     nextTurn,
     firstTurn,
     drawNFromDeck,
+    eqColor,
   )
 where
 
@@ -59,6 +60,16 @@ data ColoredCard
   | GreenCard ColoredKind
   | BlueCard ColoredKind
   deriving (Show, Eq, Generic)
+
+class EqColor a where
+  eqColor :: a -> a -> Bool
+
+instance EqColor ColoredCard where
+  (RedCard _) `eqColor` (RedCard _) = True
+  (YellowCard _) `eqColor` (YellowCard _) = True
+  (GreenCard _) `eqColor` (GreenCard _) = True
+  (BlueCard _) `eqColor` (BlueCard _) = True
+  _ `eqColor` _ = False
 
 data CardKind = CWild WildCard | CColored ColoredCard deriving (Show, Eq, Generic)
 

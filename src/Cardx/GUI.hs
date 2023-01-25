@@ -214,7 +214,7 @@ handleEvent wenv node model evt = case evt of
       (xs, ph) = fromMaybe ([], V.empty) $ f (model.gameState.deck, V.empty)
       (xs', ch) = fromMaybe ([], V.empty) $ f (xs, V.empty)
       (xs'', tc) = fromMaybe ([], V.empty) $ f (xs', V.empty)
-  AppClickCard card@Card {id = idx, kind = _} ->
+  AppClickCard card@Card {id = idx, kind = ck} ->
     [ Model $
         model
           & #gameState . #player . #hand .~ nh
