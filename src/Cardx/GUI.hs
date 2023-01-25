@@ -218,7 +218,7 @@ handleEvent wenv node model evt = case evt of
       n = 7
       (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
       (xs', ch) = unsafeF n (xs, V.empty)
-      (xs'', tc) = unsafeF n (xs', V.empty)
+      (xs'', tc) = unsafeF 1 (xs', V.empty)
   AppClickCard card@Card {id = idx, kind = ck} ->
     case ck of
       CWild _ -> []
