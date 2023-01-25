@@ -31,6 +31,7 @@ data Scene
   = SMenu
   | SPickDealer
   | SPlay
+  | SPickWildCardColor
   | SEnd
   deriving (Show, Eq)
 
@@ -39,6 +40,7 @@ data AppEvent
   | AppPickDealer
   | AppDealCards
   | AppClickCard Card
+  | AppPickWildCardColor ColoredCard
   | AppChangeScene Scene
   deriving (Show, Eq)
 
@@ -139,12 +141,13 @@ playScene ::
     TS.TextShow a2,
     HasField "score" r1 a1,
     HasField "score" r2 a2,
-    HasField "hand" r2 (Vector Card),
     HasField "hand" r1 (Vector Card),
-    HasField "computer" r3 r2,
+    HasField "hand" r2 (Vector Card),
+    HasField "computer" r3 r1,
     HasField "deck" r3 (t1 Card),
     HasField "drawPile" r3 (t2 Card),
-    HasField "player" r3 r1,
+    HasField "player" r3 r2,
+    HasField "turn" r3 Turn,
     HasField "gameState" r4 r3
   ) =>
   p ->
@@ -155,9 +158,23 @@ playScene wenv model =
     [ label $ "Win score: " <> TS.showt CC.maxScore,
       label $ "Player score: " <> TS.showt model.gameState.player.score,
       label $ "Computer score: " <> TS.showt model.gameState.computer.score,
+      label $ "Next turn: " <> (TS.showt . nextTurn) model.gameState.turn,
       spacer,
       gameBoard wenv model
     ]
+
+pickWildCardColorScene :: p -> WidgetNode s AppEvent
+pickWildCardColorScene model =
+  vstack
+    [ label "Pick Wildcard color",
+      spacer,
+      button "" (AppPickWildCardColor (RedCard defaultColoredKind)) `styleBasic` [bgColor red],
+      button "" (AppPickWildCardColor (YellowCard defaultColoredKind)) `styleBasic` [bgColor yellow],
+      button "" (AppPickWildCardColor (GreenCard defaultColoredKind)) `styleBasic` [bgColor green],
+      button "" (AppPickWildCardColor (BlueCard defaultColoredKind)) `styleBasic` [bgColor blue]
+    ]
+  where
+    defaultColoredKind = CKFaceCard (FaceCard {kind = 0, score = 1})
 
 buildUI ::
   WidgetEnv AppModel AppEvent ->
@@ -171,6 +188,7 @@ buildUI wenv model = widgetTree
             SMenu -> menuScene
             SPickDealer -> pickDealerScene model
             SPlay -> playScene wenv model
+            SPickWildCardColor -> pickWildCardColorScene model
             SEnd -> endScene
         ]
         `styleBasic` [padding 10]
@@ -220,25 +238,34 @@ handleEvent wenv node model evt = case evt of
       (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
       (xs', ch) = unsafeF n (xs, V.empty)
       (xs'', tc) = unsafeF 1 (xs', V.empty)
-  AppClickCard selectedCard@Card {id = idx, kind = _} ->
+  AppClickCard selectedCard@Card {id = idx, kind = selectedCardKind} ->
     let (drawPileTopCard : _) = model.gameState.drawPile
      in if isMatchShape selectedCard drawPileTopCard
           then
             let nh = V.filter (\c -> c.id /= idx) model.gameState.player.hand
                 -- This cannot fail (player selection), so we default to the same card
                 ndp = [selectedCard] <> model.gameState.drawPile
-             in [ Model $
-                    model
-                      & #gameState . #player . #hand .~ nh
-                      & #gameState . #drawPile .~ ndp
-                ]
+                model' =
+                  [ Model $
+                      model
+                        & #gameState . #player . #hand .~ nh
+                        & #gameState . #drawPile .~ ndp
+                  ]
+             in case selectedCardKind of
+                  CWild _ -> model' <> [Event $ AppChangeScene SPickWildCardColor]
+                  CColored _ -> model'
           else []
+  AppPickWildCardColor cc ->
+    [ Model $ model & #gameState . #wildcardColor .~ Just cc,
+      Event $ AppChangeScene SPlay
+    ]
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
           SMenu -> [Model initialModel]
           SPickDealer -> [changeScene SPickDealer]
           SPlay -> [changeScene SPlay]
+          SPickWildCardColor -> [changeScene SPickWildCardColor]
           SEnd -> [changeScene SEnd]
 
 launchGUI :: IO ()
