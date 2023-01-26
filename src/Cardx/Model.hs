@@ -109,14 +109,13 @@ makeWilds :: WildKind -> Vector Card
 makeWilds x = V.replicate 4 (Card {id = 0, kind = CWild (WildCard x CC.wildScore)})
 
 makeRange :: Natural -> (Natural -> a) -> Vector a -> Vector a
-makeRange from f xs =
-  V.concat [xs, V.fromList $ fmap f [from .. 9]]
+makeRange from f xs = V.concat [xs, f <$> V.enumFromTo from 9]
 
 makeColoredCardSet :: Natural -> (ColoredKind -> ColoredCard) -> Vector ActionCard -> Vector Card
 makeColoredCardSet from color =
   faces . actions
   where
-    actions = V.map (\x -> Card {id = 0, kind = CColored (color (CKActionCard x))})
+    actions = fmap (\x -> Card {id = 0, kind = CColored (color (CKActionCard x))})
     faces = makeRange from (\x -> Card {id = 0, kind = CColored (color (CKFaceCard (FaceCard x x)))})
 
 makeColoreds :: Vector Card
