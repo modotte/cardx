@@ -24,6 +24,8 @@ module Cardx.Model
     drawNFromDeck,
     eqColor,
     isMatchShape,
+    getColoredKind,
+    isEqualColorKind,
   )
 where
 
@@ -61,16 +63,6 @@ data ColoredCard
   | GreenCard ColoredKind
   | BlueCard ColoredKind
   deriving (Show, Eq, Generic)
-
-class EqColor a where
-  eqColor :: a -> a -> Bool
-
-instance EqColor ColoredCard where
-  (RedCard _) `eqColor` (RedCard _) = True
-  (YellowCard _) `eqColor` (YellowCard _) = True
-  (GreenCard _) `eqColor` (GreenCard _) = True
-  (BlueCard _) `eqColor` (BlueCard _) = True
-  _ `eqColor` _ = False
 
 data CardKind = CWild WildCard | CColored ColoredCard deriving (Show, Eq, Generic)
 
@@ -145,16 +137,18 @@ makeDeck = V.toList cardsidx
     cardsidx = V.imap (\i x -> Card {id = fromInteger . toInteger $ i, kind = x.kind}) cards
     cards = V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
 
+getColoredKind :: ColoredCard -> ColoredKind
+getColoredKind (RedCard x) = x
+getColoredKind (YellowCard x) = x
+getColoredKind (GreenCard x) = x
+getColoredKind (BlueCard x) = x
+
 coloredScore :: ColoredCard -> Natural
 coloredScore =
-  f . g
+  f . getColoredKind
   where
     f (CKActionCard (ActionCard {score})) = score
     f (CKFaceCard (FaceCard {score})) = score
-    g (RedCard c) = c
-    g (YellowCard c) = c
-    g (GreenCard c) = c
-    g (BlueCard c) = c
 
 cardScore :: Card -> Natural
 cardScore (Card {kind = CWild (WildCard {score})}) = score
@@ -187,6 +181,29 @@ drawOne = do
 drawNFromDeck :: Natural -> [State DeckToHand DeckToHand]
 drawNFromDeck n = replicate (fromInteger . toInteger $ n) drawOne
 
+eqColor :: ColoredCard -> ColoredCard -> Bool
+(RedCard _) `eqColor` (RedCard _) = True
+(YellowCard _) `eqColor` (YellowCard _) = True
+(GreenCard _) `eqColor` (GreenCard _) = True
+(BlueCard _) `eqColor` (BlueCard _) = True
+_ `eqColor` _ = False
+
+isEqualColorKind :: ColoredCard -> ColoredCard -> Bool
+isEqualColorKind m n =
+  let a = getColoredKind m
+      b = getColoredKind n
+   in case a of
+        CKActionCard (ActionCard {kind = ka}) ->
+          case b of
+            CKActionCard (ActionCard {kind = kb}) ->
+              ka == kb
+            _ -> False
+        CKFaceCard (FaceCard {kind = ka}) ->
+          case b of
+            CKFaceCard (FaceCard {kind = kb}) ->
+              ka == kb
+            _ -> False
+
 -- TODO: Add test for isEqualColorKind
 isMatchShape :: Card -> Card -> Bool
 isMatchShape
@@ -197,25 +214,4 @@ isMatchShape
       CColored cc1 ->
         case card2 of
           CWild _ -> True
-          CColored cc2 ->
-            isEqualColor || isEqualColorKind
-            where
-              isEqualColor = eqColor cc1 cc2
-              fc (RedCard x) = x
-              fc (YellowCard x) = x
-              fc (GreenCard x) = x
-              fc (BlueCard x) = x
-              a = fc cc1
-              b = fc cc2
-              isEqualColorKind =
-                case a of
-                  (CKActionCard (ActionCard {kind = ka})) ->
-                    case b of
-                      CKActionCard (ActionCard {kind = kb}) ->
-                        ka == kb
-                      _ -> False
-                  CKFaceCard (FaceCard {kind = ka}) ->
-                    case b of
-                      CKFaceCard (FaceCard {kind = kb}) ->
-                        ka == kb
-                      _ -> False
+          CColored cc2 -> eqColor cc1 cc2 || isEqualColorKind cc1 cc2

@@ -272,6 +272,10 @@ main = hspec $ do
                      Card {id = 107, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 9, score = 9})))}
                    ]
 
+  it "getColoredKind" $ do
+    CM.getColoredKind (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))
+      `shouldBe` CKFaceCard (FaceCard {kind = 6, score = 6})
+
   it "coloredScore" $ do
     CM.coloredScore (RedCard (CKFaceCard (FaceCard {kind = 1, score = 2939}))) `shouldBe` 2939
 

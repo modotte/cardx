@@ -15,7 +15,7 @@ import Data.Vector (Vector, (!))
 import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
-import Relude hiding ((&))
+import Relude hiding (id, (&))
 import TextShow qualified as TS
 
 data AppModel = AppModel
@@ -245,25 +245,27 @@ handleEvent _ _ model evt = case evt of
       (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
       (xs', ch) = unsafeF n (xs, V.empty)
       (xs'', tc) = unsafeF 1 (xs', V.empty)
-  AppClickCard selectedCard@Card {id = idx, kind = selectedCardKind} ->
+  AppClickCard selectedCard@Card {id, kind = selectedCardKind} ->
     let pileTopCard =
           case model.gameState.drawPile of
             [] -> selectedCard
             (x : _) -> x
-     in if isMatchShape selectedCard pileTopCard
-          then
-            let nh = V.filter (\c -> c.id /= idx) model.gameState.player.hand
-                -- This cannot fail (player selection), so we default to the same card
-                ndp = [selectedCard] <> model.gameState.drawPile
-                model' =
-                  model
-                    & #gameState . #player . #hand .~ nh
-                    & #gameState . #drawPile .~ ndp
-             in case selectedCardKind of
-                  CWild (WildCard {kind = k, score = _}) ->
-                    [Model $ model' & ((#gameState . #wildcardKind) ?~ k), Event $ AppChangeScene SPickWildCardColor]
-                  CColored _ -> [Model model']
-          else []
+     in ( if isMatchShape selectedCard pileTopCard
+            then
+              ( let nh = V.filter (\c -> c.id /= id) model.gameState.player.hand
+                    -- This cannot fail (player selection), so we default to the same card
+                    ndp = [selectedCard] <> model.gameState.drawPile
+                    model' =
+                      model
+                        & #gameState . #player . #hand .~ nh
+                        & #gameState . #drawPile .~ ndp
+                 in case selectedCardKind of
+                      CWild (WildCard {kind = k, score = _}) ->
+                        [Model $ model' & ((#gameState . #wildcardKind) ?~ k), Event $ AppChangeScene SPickWildCardColor]
+                      CColored _ -> [Model model']
+              )
+            else []
+        )
   AppPickWildCardColor cc ->
     [ Model $ model & ((#gameState . #wildcardColor) ?~ cc),
       Event $ AppChangeScene SPlay
