@@ -56,6 +56,7 @@ library
     , lens
     , monomer
     , random
+    , random-shuffle
     , relude
     , text
     , text-show
@@ -88,6 +89,7 @@ executable cardx-exe
     , lens
     , monomer
     , random
+    , random-shuffle
     , relude
     , text
     , text-show
@@ -122,6 +124,7 @@ test-suite cardx-test
     , lens
     , monomer
     , random
+    , random-shuffle
     , relude
     , text
     , text-show

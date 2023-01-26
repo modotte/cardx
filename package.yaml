@@ -41,6 +41,7 @@ dependencies:
   - monomer
   - text-show
   - random
+  - random-shuffle
 
 ghc-options:
   - -Wall
