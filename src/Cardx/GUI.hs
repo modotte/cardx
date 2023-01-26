@@ -174,14 +174,14 @@ pickWildCardColorScene model =
   vstack
     [ label $ "Pick " <> kindText,
       spacer,
-      button "" (AppPickWildCardColor $ RedCard defaultColoredKind) `styleBasic` [bgColor red],
-      button "" (AppPickWildCardColor $ YellowCard defaultColoredKind) `styleBasic` [bgColor yellow],
-      button "" (AppPickWildCardColor $ GreenCard defaultColoredKind) `styleBasic` [bgColor green],
-      button "" (AppPickWildCardColor $ BlueCard defaultColoredKind) `styleBasic` [bgColor blue]
+      button "" (AppPickWildCardColor $ RedCard defCK) `styleBasic` [bgColor red],
+      button "" (AppPickWildCardColor $ YellowCard defCK) `styleBasic` [bgColor yellow],
+      button "" (AppPickWildCardColor $ GreenCard defCK) `styleBasic` [bgColor green],
+      button "" (AppPickWildCardColor $ BlueCard defCK) `styleBasic` [bgColor blue]
     ]
   where
     kindText = maybe "" TS.showt $ model.gameState.wildcardKind
-    defaultColoredKind = CKFaceCard $ FaceCard {kind = 0, score = 1}
+    defCK = CKFaceCard $ FaceCard {kind = 0, score = 1}
 
 buildUI ::
   WidgetEnv AppModel AppEvent ->
