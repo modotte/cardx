@@ -75,13 +75,13 @@ pickDealerScene model =
         else button "Pick a dealer" AppPickDealer
     ]
 
-cardTextColor :: [StyleState]
-cardTextColor = [textColor white]
+cardTextColor :: StyleState
+cardTextColor = textColor white
 
 -- TODO: Show score on cards
 wcAsBtn :: Typeable e => WildCard -> e -> WidgetNode s e
 wcAsBtn (WildCard {kind, score}) evt =
-  button (TS.showt kind) evt `styleBasic` [bgColor black] <> cardTextColor
+  button (TS.showt kind) evt `styleBasic` (cardTextColor : [bgColor black])
 
 ckAsBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
 ckAsBtn (CKActionCard (ActionCard {kind, score})) = button $ TS.showt kind
@@ -89,13 +89,13 @@ ckAsBtn (CKFaceCard (FaceCard {kind, score})) = button $ TS.showt kind
 
 ccAsBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
 ccAsBtn (RedCard x) evt =
-  ckAsBtn x evt `styleBasic` [bgColor red] <> cardTextColor
+  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor red])
 ccAsBtn (YellowCard x) evt =
-  ckAsBtn x evt `styleBasic` [bgColor yellow] <> cardTextColor
+  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor yellow])
 ccAsBtn (GreenCard x) evt =
-  ckAsBtn x evt `styleBasic` [bgColor green] <> cardTextColor
+  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor green])
 ccAsBtn (BlueCard x) evt =
-  ckAsBtn x evt `styleBasic` [bgColor blue] <> cardTextColor
+  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor blue])
 
 cardAsBtn :: Card -> WidgetNode s AppEvent
 cardAsBtn card@Card {kind} =
@@ -254,14 +254,14 @@ handleEvent _ _ model evt = case evt of
             then
               ( let nh = V.filter (\c -> c.id /= id) model.gameState.player.hand
                     -- This cannot fail (player selection), so we default to the same card
-                    ndp = [selectedCard] <> model.gameState.drawPile
+                    ndp = selectedCard : model.gameState.drawPile
                     model' =
                       model
                         & #gameState . #player . #hand .~ nh
                         & #gameState . #drawPile .~ ndp
                  in case selectedCardKind of
-                      CWild (WildCard {kind = k, score = _}) ->
-                        [Model $ model' & ((#gameState . #wildcardKind) ?~ k), Event $ AppChangeScene SPickWildCardColor]
+                      CWild (WildCard {kind}) ->
+                        [Model $ model' & ((#gameState . #wildcardKind) ?~ kind), Event $ AppChangeScene SPickWildCardColor]
                       CColored _ -> [Model model']
               )
             else []

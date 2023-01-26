@@ -120,7 +120,10 @@ makeColoredCardSet from color =
 
 makeColoreds :: Vector Card
 makeColoreds =
-  V.concatMap (\i -> V.concatMap (\x -> makeColoredCardSet i x acs) colors) (V.fromList [0, 1])
+  V.concatMap
+    ( \i -> V.concatMap (\x -> makeColoredCardSet i x acs) colors
+    )
+    $ V.fromList [0, 1]
   where
     colors = V.fromList [RedCard, YellowCard, GreenCard, BlueCard]
     acs =
@@ -131,9 +134,9 @@ makeColoreds =
         ]
 
 makeDeck :: [Card]
-makeDeck = V.toList cardsidx
+makeDeck = V.toList xs
   where
-    cardsidx = V.imap (\i x -> Card {id = fromInteger . toInteger $ i, kind = x.kind}) cards
+    xs = V.imap (\i x -> Card {id = fromInteger . toInteger $ i, kind = x.kind}) cards
     cards = V.concat [makeWilds Wild, makeWilds WildDraw4, makeColoreds]
 
 getColoredKind :: ColoredCard -> ColoredKind
@@ -169,7 +172,7 @@ type DeckToHand = Maybe ([Card], Vector Card)
 drawOneAux :: DeckToHand -> DeckToHand
 drawOneAux Nothing = Nothing
 drawOneAux (Just ([], _)) = Nothing
-drawOneAux (Just (x : xs, h)) = Just (xs, h <> V.fromList [x])
+drawOneAux (Just (x : xs, h)) = Just (xs, V.snoc h x)
 
 drawOne :: State DeckToHand DeckToHand
 drawOne = do
@@ -203,7 +206,6 @@ isEqualColoredKind m n =
               ka == kb
             _ -> False
 
--- TODO: Add test for isEqualColorKind
 isMatchShape :: Card -> Card -> Bool
 isMatchShape
   Card {kind = card1}
