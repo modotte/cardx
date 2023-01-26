@@ -4,16 +4,14 @@
 
 module Cardx.GUI (launchGUI) where
 
-import Cardx.ActionKind (ActionKind (Skip))
 import Cardx.Constant qualified as CC
 import Cardx.Model
-import Cardx.WildKind (WildKind (Wild))
 import Control.Lens
 import Data.Default.Class qualified as D
 import Data.Generics.Labels ()
 import Data.Text (Text)
 import Data.Text qualified as T
-import Data.Vector (Vector, (!), (!?))
+import Data.Vector (Vector, (!))
 import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
@@ -82,12 +80,12 @@ cardTextColor = [textColor white]
 
 -- TODO: Show score on cards
 wcAsBtn :: Typeable e => WildCard -> e -> WidgetNode s e
-wcAsBtn (WildCard {kind = k, score = s}) evt =
-  button (TS.showt k) evt `styleBasic` [bgColor black] <> cardTextColor
+wcAsBtn (WildCard {kind, score}) evt =
+  button (TS.showt kind) evt `styleBasic` [bgColor black] <> cardTextColor
 
 ckAsBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
-ckAsBtn (CKActionCard (ActionCard {kind = k, score = s})) = button (TS.showt k)
-ckAsBtn (CKFaceCard (FaceCard {kind = k, score = s})) = button (TS.showt k)
+ckAsBtn (CKActionCard (ActionCard {kind, score})) = button (TS.showt kind)
+ckAsBtn (CKFaceCard (FaceCard {kind, score})) = button (TS.showt kind)
 
 ccAsBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
 ccAsBtn (RedCard x) evt =
@@ -100,8 +98,8 @@ ccAsBtn (BlueCard x) evt =
   ckAsBtn x evt `styleBasic` [bgColor blue] <> cardTextColor
 
 cardAsBtn :: Card -> WidgetNode s AppEvent
-cardAsBtn card@Card {id = _, kind = ck} =
-  case ck of
+cardAsBtn card@Card {kind} =
+  case kind of
     CWild x -> wcAsBtn x $ AppClickCard card
     CColored x -> ccAsBtn x $ AppClickCard card
 
@@ -121,17 +119,19 @@ gameBoard ::
 gameBoard model =
   scroll $
     vstack
-      [ hstack $ cardAsBtn <$> V.toList model.gameState.computer.hand,
+      [ hstack $ cardAsBtn <$> V.toList gs.computer.hand,
         spacer,
         vstack
-          [ hstack $ cardAsBtn <$> model.gameState.deck,
+          [ hstack $ cardAsBtn <$> gs.deck,
             spacer,
-            hstack $ cardAsBtn <$> model.gameState.drawPile
+            hstack $ cardAsBtn <$> gs.drawPile
           ],
         spacer,
-        hstack $ cardAsBtn <$> V.toList model.gameState.player.hand
+        hstack $ cardAsBtn <$> V.toList gs.player.hand
       ]
       `styleBasic` [padding 10]
+  where
+    gs = model.gameState
 
 playScene ::
   ( Traversable t2,
@@ -154,12 +154,14 @@ playScene ::
 playScene model =
   vstack
     [ label $ "Win score: " <> TS.showt CC.maxScore,
-      label $ "Player score: " <> TS.showt model.gameState.player.score,
-      label $ "Computer score: " <> TS.showt model.gameState.computer.score,
-      label $ "Next turn: " <> (TS.showt . nextTurn) model.gameState.turn,
+      label $ "Player score: " <> TS.showt gs.player.score,
+      label $ "Computer score: " <> TS.showt gs.computer.score,
+      label $ "Next turn: " <> (TS.showt . nextTurn) gs.turn,
       spacer,
       gameBoard model
     ]
+  where
+    gs = model.gameState
 
 pickWildCardColorScene ::
   ( HasField "gameState" p r,
@@ -178,8 +180,8 @@ pickWildCardColorScene model =
       button "" (AppPickWildCardColor (BlueCard defaultColoredKind)) `styleBasic` [bgColor blue]
     ]
   where
-    kindText = maybe "" TS.showt (model.gameState.wildcardKind)
-    defaultColoredKind = CKFaceCard (FaceCard {kind = 0, score = 1})
+    kindText = maybe "" TS.showt $ model.gameState.wildcardKind
+    defaultColoredKind = CKFaceCard $ FaceCard {kind = 0, score = 1}
 
 buildUI ::
   WidgetEnv AppModel AppEvent ->

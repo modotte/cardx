@@ -35,7 +35,7 @@ import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
 import Data.Default.Class (Default (def))
 import Data.Generics.Labels ()
-import Data.Vector (Vector, (!), (!?))
+import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Relude
 import TextShow (TextShow, showt)
@@ -149,16 +149,16 @@ coloredScore :: ColoredCard -> Natural
 coloredScore =
   f . g
   where
-    f (CKActionCard (ActionCard {kind = _, score = s})) = s
-    f (CKFaceCard (FaceCard {kind = _, score = s})) = s
+    f (CKActionCard (ActionCard {score})) = score
+    f (CKFaceCard (FaceCard {score})) = score
     g (RedCard c) = c
     g (YellowCard c) = c
     g (GreenCard c) = c
     g (BlueCard c) = c
 
 cardScore :: Card -> Natural
-cardScore (Card {id = _, kind = CWild (WildCard {kind = _, score = s})}) = s
-cardScore (Card {id = _, kind = (CColored cc)}) = coloredScore cc
+cardScore (Card {kind = CWild (WildCard {score})}) = score
+cardScore (Card {kind = CColored cc}) = coloredScore cc
 
 pickDealer :: Card -> Card -> Dealer
 pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer
@@ -190,8 +190,8 @@ drawNFromDeck n = replicate (fromInteger . toInteger $ n) drawOne
 -- TODO: Add test for isEqualColorKind
 isMatchShape :: Card -> Card -> Bool
 isMatchShape
-  Card {id = _, kind = card1}
-  Card {id = _, kind = card2} =
+  Card {kind = card1}
+  Card {kind = card2} =
     case card1 of
       CWild _ -> True
       CColored cc1 ->
@@ -209,13 +209,13 @@ isMatchShape
               b = fc cc2
               isEqualColorKind =
                 case a of
-                  (CKActionCard (ActionCard {kind = ka, score = _})) ->
+                  (CKActionCard (ActionCard {kind = ka})) ->
                     case b of
-                      CKActionCard (ActionCard {kind = kb, score = _}) ->
+                      CKActionCard (ActionCard {kind = kb}) ->
                         ka == kb
                       _ -> False
-                  CKFaceCard (FaceCard {kind = ka, score = _}) ->
+                  CKFaceCard (FaceCard {kind = ka}) ->
                     case b of
-                      CKFaceCard (FaceCard {kind = kb, score = _}) ->
+                      CKFaceCard (FaceCard {kind = kb}) ->
                         ka == kb
                       _ -> False

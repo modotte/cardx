@@ -27,6 +27,7 @@ default-extensions:
   - NoFieldSelectors
   - DeriveGeneric
   - NoImplicitPrelude
+  - NamedFieldPuns
 
 dependencies:
   - base >= 4.7 && < 5
@@ -39,6 +40,7 @@ dependencies:
   - generic-lens
   - monomer
   - text-show
+  - random
 
 ghc-options:
   - -Wall
