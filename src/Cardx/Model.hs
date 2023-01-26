@@ -26,6 +26,7 @@ module Cardx.Model
     isMatchShape,
     getColoredKind,
     isEqualColoredKind,
+    isMatchWildCardColor,
   )
 where
 
@@ -216,3 +217,12 @@ isMatchShape
         case card2 of
           CWild _ -> True
           CColored cc2 -> eqColor cc1 cc2 || isEqualColoredKind cc1 cc2
+
+isMatchWildCardColor :: Maybe ColoredCard -> Card -> Bool
+isMatchWildCardColor mcc Card {kind} =
+  case mcc of
+    Nothing -> False
+    Just cc ->
+      case kind of
+        CWild _ -> True
+        CColored sc -> eqColor cc sc

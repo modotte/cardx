@@ -246,23 +246,38 @@ handleEvent _ _ model evt = case evt of
       (xs', ch) = unsafeF n (xs, V.empty)
       (xs'', tc) = unsafeF 1 (xs', V.empty)
   AppClickCard selectedCard@Card {id, kind = selectedCardKind} ->
-    let pileTopCard =
-          case model.gameState.drawPile of
+    let gs = model.gameState
+        pileTopCard =
+          case gs.drawPile of
             [] -> selectedCard
             (x : _) -> x
      in ( if isMatchShape selectedCard pileTopCard
             then
-              ( let nh = V.filter (\c -> c.id /= id) model.gameState.player.hand
+              ( let nh = V.filter (\c -> c.id /= id) gs.player.hand
                     -- This cannot fail (player selection), so we default to the same card
-                    ndp = selectedCard : model.gameState.drawPile
+                    ndp = selectedCard : gs.drawPile
                     model' =
                       model
                         & #gameState . #player . #hand .~ nh
                         & #gameState . #drawPile .~ ndp
                  in case selectedCardKind of
                       CWild (WildCard {kind}) ->
-                        [Model $ model' & ((#gameState . #wildcardKind) ?~ kind), Event $ AppChangeScene SPickWildCardColor]
-                      CColored _ -> [Model model']
+                        [ Model $
+                            model' & ((#gameState . #wildcardKind) ?~ kind),
+                          Event $ AppChangeScene SPickWildCardColor
+                        ]
+                      CColored _ ->
+                        case gs.wildcardColor of
+                          Nothing -> [Model model']
+                          Just xyz ->
+                            if isMatchWildCardColor gs.wildcardColor selectedCard
+                              then
+                                [ Model $
+                                    model'
+                                      & #gameState . #wildcardColor .~ Nothing
+                                      & #gameState . #wildcardKind .~ Nothing
+                                ]
+                              else []
               )
             else []
         )
