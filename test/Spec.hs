@@ -371,8 +371,3 @@ main = hspec $ do
         y = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
 
     CM.isMatchShape x y `shouldBe` True
-
-  it "isMatchWildCardColor" $ do
-    let x = Just $ BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6}))
-        y = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 2, score = 6})))}
-    CM.isMatchWildCardColor x y `shouldBe` True

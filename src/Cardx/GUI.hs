@@ -266,11 +266,11 @@ handleEvent _ _ model evt = case evt of
                             model' & ((#gameState . #wildcardKind) ?~ kind),
                           Event $ AppChangeScene SPickWildCardColor
                         ]
-                      CColored _ ->
+                      CColored scc ->
                         case gs.wildcardColor of
                           Nothing -> [Model model']
-                          Just xyz ->
-                            if isMatchWildCardColor gs.wildcardColor selectedCard
+                          Just wcc ->
+                            if eqColor scc wcc
                               then
                                 [ Model $
                                     model'

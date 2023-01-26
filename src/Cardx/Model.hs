@@ -26,7 +26,6 @@ module Cardx.Model
     isMatchShape,
     getColoredKind,
     isEqualColoredKind,
-    isMatchWildCardColor,
   )
 where
 
