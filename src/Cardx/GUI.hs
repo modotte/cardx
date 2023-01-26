@@ -116,10 +116,9 @@ gameBoard ::
     HasField "player" r3 r1,
     HasField "gameState" r4 r3
   ) =>
-  p ->
   r4 ->
   WidgetNode s AppEvent
-gameBoard wenv model =
+gameBoard model =
   scroll $
     vstack
       [ hstack $ cardAsBtn <$> V.toList model.gameState.computer.hand,
@@ -150,17 +149,16 @@ playScene ::
     HasField "turn" r3 Turn,
     HasField "gameState" r4 r3
   ) =>
-  p ->
   r4 ->
   WidgetNode s AppEvent
-playScene wenv model =
+playScene model =
   vstack
     [ label $ "Win score: " <> TS.showt CC.maxScore,
       label $ "Player score: " <> TS.showt model.gameState.player.score,
       label $ "Computer score: " <> TS.showt model.gameState.computer.score,
       label $ "Next turn: " <> (TS.showt . nextTurn) model.gameState.turn,
       spacer,
-      gameBoard wenv model
+      gameBoard model
     ]
 
 pickWildCardColorScene ::
@@ -187,14 +185,14 @@ buildUI ::
   WidgetEnv AppModel AppEvent ->
   AppModel ->
   WidgetNode AppModel AppEvent
-buildUI wenv model = widgetTree
+buildUI _ model = widgetTree
   where
     widgetTree =
       vstack
         [ case model.currentScene of
             SMenu -> menuScene
             SPickDealer -> pickDealerScene model
-            SPlay -> playScene wenv model
+            SPlay -> playScene model
             SPickWildCardColor -> pickWildCardColorScene model
             SEnd -> endScene
         ]
@@ -214,7 +212,7 @@ handleEvent ::
   AppModel ->
   AppEvent ->
   [AppEventResponse AppModel AppEvent]
-handleEvent wenv node model evt = case evt of
+handleEvent _ _ model evt = case evt of
   AppInit -> []
   AppPickDealer ->
     [ Model $
