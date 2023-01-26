@@ -336,6 +336,30 @@ main = hspec $ do
 
     CM.eqColor x y `shouldBe` True
 
+  it "isEqualColoredKind 1" $ do
+    let x = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+        y = RedCard (CKFaceCard (FaceCard {kind = 8, score = 20}))
+
+    CM.isEqualColoredKind x y `shouldBe` False
+
+  it "isEqualColoredKind 2" $ do
+    let x = YellowCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+        y = YellowCard (CKActionCard (ActionCard {kind = Draw2, score = 20}))
+
+    CM.isEqualColoredKind x y `shouldBe` False
+
+  it "isEqualColoredKind 3" $ do
+    let x = GreenCard (CKFaceCard (FaceCard {kind = 4, score = 85}))
+        y = YellowCard (CKFaceCard (FaceCard {kind = 4, score = 20}))
+
+    CM.isEqualColoredKind x y `shouldBe` True
+
+  it "isEqualColoredKind 4" $ do
+    let x = RedCard (CKActionCard (ActionCard {kind = Draw2, score = 32}))
+        y = YellowCard (CKActionCard (ActionCard {kind = Draw2, score = 20}))
+
+    CM.isEqualColoredKind x y `shouldBe` True
+
   it "isMatchShape (unmatching color and colorkind)" $ do
     let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
         y = Card {id = 56, kind = CColored (RedCard (CKFaceCard (FaceCard {kind = 2, score = 6})))}

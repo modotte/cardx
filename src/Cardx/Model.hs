@@ -25,7 +25,7 @@ module Cardx.Model
     eqColor,
     isMatchShape,
     getColoredKind,
-    isEqualColorKind,
+    isEqualColoredKind,
   )
 where
 
@@ -188,8 +188,8 @@ eqColor :: ColoredCard -> ColoredCard -> Bool
 (BlueCard _) `eqColor` (BlueCard _) = True
 _ `eqColor` _ = False
 
-isEqualColorKind :: ColoredCard -> ColoredCard -> Bool
-isEqualColorKind m n =
+isEqualColoredKind :: ColoredCard -> ColoredCard -> Bool
+isEqualColoredKind m n =
   let a = getColoredKind m
       b = getColoredKind n
    in case a of
@@ -214,4 +214,4 @@ isMatchShape
       CColored cc1 ->
         case card2 of
           CWild _ -> True
-          CColored cc2 -> eqColor cc1 cc2 || isEqualColorKind cc1 cc2
+          CColored cc2 -> eqColor cc1 cc2 || isEqualColoredKind cc1 cc2
