@@ -187,7 +187,6 @@ drawOne = do
 drawNFromDeck :: Natural -> [State DeckToHand DeckToHand]
 drawNFromDeck n = replicate (fromInteger . toInteger $ n) drawOne
 
--- TODO: Also check for matching facecard numbers and action type
 isMatchShape :: Card -> Card -> Bool
 isMatchShape
   Card {id = _, kind = card1}
@@ -197,4 +196,25 @@ isMatchShape
       CColored cc1 ->
         case card2 of
           CWild _ -> True
-          CColored cc2 -> eqColor cc1 cc2
+          CColored cc2 ->
+            isEqualColor || isEqualColorKind
+            where
+              isEqualColor = eqColor cc1 cc2
+              fc (RedCard x) = x
+              fc (YellowCard x) = x
+              fc (GreenCard x) = x
+              fc (BlueCard x) = x
+              a = fc cc1
+              b = fc cc2
+              isEqualColorKind =
+                case a of
+                  (CKActionCard (ActionCard {kind = ka, score = _})) ->
+                    case b of
+                      CKActionCard (ActionCard {kind = kb, score = _}) ->
+                        ka == kb
+                      _ -> False
+                  CKFaceCard (FaceCard {kind = ka, score = _}) ->
+                    case b of
+                      CKFaceCard (FaceCard {kind = kb, score = _}) ->
+                        ka == kb
+                      _ -> False
