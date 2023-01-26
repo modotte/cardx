@@ -84,8 +84,8 @@ wcAsBtn (WildCard {kind, score}) evt =
   button (TS.showt kind) evt `styleBasic` [bgColor black] <> cardTextColor
 
 ckAsBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
-ckAsBtn (CKActionCard (ActionCard {kind, score})) = button (TS.showt kind)
-ckAsBtn (CKFaceCard (FaceCard {kind, score})) = button (TS.showt kind)
+ckAsBtn (CKActionCard (ActionCard {kind, score})) = button $ TS.showt kind
+ckAsBtn (CKFaceCard (FaceCard {kind, score})) = button $ TS.showt kind
 
 ccAsBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
 ccAsBtn (RedCard x) evt =
@@ -174,10 +174,10 @@ pickWildCardColorScene model =
   vstack
     [ label $ "Pick " <> kindText,
       spacer,
-      button "" (AppPickWildCardColor (RedCard defaultColoredKind)) `styleBasic` [bgColor red],
-      button "" (AppPickWildCardColor (YellowCard defaultColoredKind)) `styleBasic` [bgColor yellow],
-      button "" (AppPickWildCardColor (GreenCard defaultColoredKind)) `styleBasic` [bgColor green],
-      button "" (AppPickWildCardColor (BlueCard defaultColoredKind)) `styleBasic` [bgColor blue]
+      button "" (AppPickWildCardColor $ RedCard defaultColoredKind) `styleBasic` [bgColor red],
+      button "" (AppPickWildCardColor $ YellowCard defaultColoredKind) `styleBasic` [bgColor yellow],
+      button "" (AppPickWildCardColor $ GreenCard defaultColoredKind) `styleBasic` [bgColor green],
+      button "" (AppPickWildCardColor $ BlueCard defaultColoredKind) `styleBasic` [bgColor blue]
     ]
   where
     kindText = maybe "" TS.showt $ model.gameState.wildcardKind

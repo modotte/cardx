@@ -8,4 +8,4 @@ data WildKind = Wild | WildDraw4 deriving (Show, Eq, Generic)
 
 instance TextShow WildKind where
   showt Wild = "Wild"
-  showt WildDraw4 = "Wild4"
+  showt WildDraw4 = "WildDraw4"
