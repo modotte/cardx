@@ -187,6 +187,7 @@ drawOne = do
 drawNFromDeck :: Natural -> [State DeckToHand DeckToHand]
 drawNFromDeck n = replicate (fromInteger . toInteger $ n) drawOne
 
+-- TODO: Add test for isEqualColorKind
 isMatchShape :: Card -> Card -> Bool
 isMatchShape
   Card {id = _, kind = card1}
