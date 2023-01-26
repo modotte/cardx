@@ -270,6 +270,7 @@ handleEvent _ _ model evt = case evt of
                         case gs.wildcardColor of
                           Nothing -> [Model model']
                           Just wcc ->
+                            -- TODO: Decide if want to allow non-face card stacking.
                             if eqColor scc wcc
                               then
                                 [ Model $
