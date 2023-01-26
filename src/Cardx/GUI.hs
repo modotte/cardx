@@ -81,29 +81,29 @@ cardTextColor :: [StyleState]
 cardTextColor = [textColor white]
 
 -- TODO: Show score on cards
-wildCardAsButton :: Typeable e => WildCard -> e -> WidgetNode s e
-wildCardAsButton (WildCard {kind = k, score = s}) evt =
+wcAsBtn :: Typeable e => WildCard -> e -> WidgetNode s e
+wcAsBtn (WildCard {kind = k, score = s}) evt =
   button (TS.showt k) evt `styleBasic` [bgColor black] <> cardTextColor
 
-coloredKindAsButton :: Typeable e => ColoredKind -> e -> WidgetNode s e
-coloredKindAsButton (CKActionCard (ActionCard {kind = k, score = s})) = button (TS.showt k)
-coloredKindAsButton (CKFaceCard (FaceCard {kind = k, score = s})) = button (TS.showt k)
+ckAsBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
+ckAsBtn (CKActionCard (ActionCard {kind = k, score = s})) = button (TS.showt k)
+ckAsBtn (CKFaceCard (FaceCard {kind = k, score = s})) = button (TS.showt k)
 
-coloredCardAsButton :: Typeable e => ColoredCard -> e -> WidgetNode s e
-coloredCardAsButton (RedCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [bgColor red] <> cardTextColor
-coloredCardAsButton (YellowCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [bgColor yellow] <> cardTextColor
-coloredCardAsButton (GreenCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [bgColor green] <> cardTextColor
-coloredCardAsButton (BlueCard x) evt =
-  coloredKindAsButton x evt `styleBasic` [bgColor blue] <> cardTextColor
+ccAsBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
+ccAsBtn (RedCard x) evt =
+  ckAsBtn x evt `styleBasic` [bgColor red] <> cardTextColor
+ccAsBtn (YellowCard x) evt =
+  ckAsBtn x evt `styleBasic` [bgColor yellow] <> cardTextColor
+ccAsBtn (GreenCard x) evt =
+  ckAsBtn x evt `styleBasic` [bgColor green] <> cardTextColor
+ccAsBtn (BlueCard x) evt =
+  ckAsBtn x evt `styleBasic` [bgColor blue] <> cardTextColor
 
-cardAsButton :: Card -> WidgetNode s AppEvent
-cardAsButton card@Card {id = _, kind = ck} =
+cardAsBtn :: Card -> WidgetNode s AppEvent
+cardAsBtn card@Card {id = _, kind = ck} =
   case ck of
-    CWild x -> wildCardAsButton x $ AppClickCard card
-    CColored x -> coloredCardAsButton x $ AppClickCard card
+    CWild x -> wcAsBtn x $ AppClickCard card
+    CColored x -> ccAsBtn x $ AppClickCard card
 
 gameBoard ::
   ( Traversable t1,
@@ -122,15 +122,15 @@ gameBoard ::
 gameBoard wenv model =
   scroll $
     vstack
-      [ hstack $ cardAsButton <$> V.toList model.gameState.computer.hand,
+      [ hstack $ cardAsBtn <$> V.toList model.gameState.computer.hand,
         spacer,
         vstack
-          [ hstack $ cardAsButton <$> model.gameState.deck,
+          [ hstack $ cardAsBtn <$> model.gameState.deck,
             spacer,
-            hstack $ cardAsButton <$> model.gameState.drawPile
+            hstack $ cardAsBtn <$> model.gameState.drawPile
           ],
         spacer,
-        hstack $ cardAsButton <$> V.toList model.gameState.player.hand
+        hstack $ cardAsBtn <$> V.toList model.gameState.player.hand
       ]
       `styleBasic` [padding 10]
 
