@@ -172,7 +172,7 @@ pickWildCardColorScene ::
   WidgetNode s AppEvent
 pickWildCardColorScene model =
   vstack
-    [ label $ "Pick " <> kindText,
+    [ label $ "Pick " <> kindText <> " color.",
       spacer,
       button "" (AppPickWildCardColor $ RedCard defCK) `styleBasic` [bgColor red],
       button "" (AppPickWildCardColor $ YellowCard defCK) `styleBasic` [bgColor yellow],
