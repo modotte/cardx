@@ -332,9 +332,9 @@ main = hspec $ do
 
     CM.eqColor x y `shouldBe` True
 
-  it "isMatchShape (unmatching color)" $ do
+  it "isMatchShape (unmatching color and colorkind)" $ do
     let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
-        y = Card {id = 56, kind = CColored (RedCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
+        y = Card {id = 56, kind = CColored (RedCard (CKFaceCard (FaceCard {kind = 2, score = 6})))}
 
     CM.isMatchShape x y `shouldBe` False
 
