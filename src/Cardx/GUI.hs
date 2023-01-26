@@ -246,8 +246,11 @@ handleEvent wenv node model evt = case evt of
       (xs', ch) = unsafeF n (xs, V.empty)
       (xs'', tc) = unsafeF 1 (xs', V.empty)
   AppClickCard selectedCard@Card {id = idx, kind = selectedCardKind} ->
-    let (drawPileTopCard : _) = model.gameState.drawPile
-     in if isMatchShape selectedCard drawPileTopCard
+    let pileTopCard =
+          case model.gameState.drawPile of
+            [] -> selectedCard
+            (x : _) -> x
+     in if isMatchShape selectedCard pileTopCard
           then
             let nh = V.filter (\c -> c.id /= idx) model.gameState.player.hand
                 -- This cannot fail (player selection), so we default to the same card
@@ -258,11 +261,11 @@ handleEvent wenv node model evt = case evt of
                     & #gameState . #drawPile .~ ndp
              in case selectedCardKind of
                   CWild (WildCard {kind = k, score = _}) ->
-                    [Model $ model' & #gameState . #wildcardKind .~ Just k, Event $ AppChangeScene SPickWildCardColor]
+                    [Model $ model' & ((#gameState . #wildcardKind) ?~ k), Event $ AppChangeScene SPickWildCardColor]
                   CColored _ -> [Model model']
           else []
   AppPickWildCardColor cc ->
-    [ Model $ model & #gameState . #wildcardColor .~ Just cc,
+    [ Model $ model & ((#gameState . #wildcardColor) ?~ cc),
       Event $ AppChangeScene SPlay
     ]
   AppChangeScene scene ->
