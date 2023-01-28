@@ -276,14 +276,12 @@ handleEvent _ _ model evt = case evt of
                           Nothing -> [Model model']
                           Just wcc ->
                             -- TODO: Decide if want to allow non-face card stacking.
-                            if eqColor scc wcc
-                              then
-                                [ Model $
-                                    model'
-                                      & #gameState . #wildcardColor .~ Nothing
-                                      & #gameState . #wildcardKind .~ Nothing
-                                ]
-                              else []
+                            [ Model $
+                                model'
+                                  & #gameState . #wildcardColor .~ Nothing
+                                  & #gameState . #wildcardKind .~ Nothing
+                              | eqColor scc wcc
+                            ]
               )
             else []
         )
@@ -295,7 +293,10 @@ handleEvent _ _ model evt = case evt of
           Wild -> [Model model', Event $ AppChangeScene SPlay]
           WildDraw4 ->
             -- TODO: Check why we can't simply use `hft` to link the lens in setter
-            [ Model $ model' & #gameState . handFromTurn (nextTurn gs.turn) . #hand .~ h,
+            [ Model $
+                model'
+                  & #gameState . handFromTurn (nextTurn gs.turn) . #hand .~ h
+                  & #gameState . #deck .~ d,
               Event $ AppChangeScene SPlay
             ]
     where
@@ -303,7 +304,7 @@ handleEvent _ _ model evt = case evt of
       model' = model & ((#gameState . #wildcardColor) ?~ cc)
       hft = handFromTurn $ nextTurn gs.turn
       n = 4
-      (_, h) = unsafeF n (gs.deck, model ^. #gameState . hft . #hand)
+      (d, h) = unsafeF n (gs.deck, model ^. #gameState . hft . #hand)
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
