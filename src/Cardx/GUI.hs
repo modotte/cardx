@@ -1,6 +1,7 @@
 {-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE TypeFamilies #-}
 
 module Cardx.GUI (launchGUI) where
 
@@ -277,6 +278,7 @@ handleEvent _ _ model evt = case evt of
                       model
                         & #gameState . (handFromTurn gs.turn) . #hand .~ nh
                         & #gameState . #drawPile .~ ndp
+                    toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
                     updatedWildcardInfo scc =
                       case gs.wildcardColor of
                         Nothing -> Just model'
@@ -299,7 +301,7 @@ handleEvent _ _ model evt = case evt of
                       CColored scc ->
                         case getColoredKind scc of
                           CKFaceCard _ ->
-                            maybe [] (\x -> [Model x]) $ updatedWildcardInfo scc
+                            maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildcardInfo scc
                           CKActionCard (ActionCard {kind}) ->
                             case kind of
                               Skip ->
@@ -307,7 +309,7 @@ handleEvent _ _ model evt = case evt of
                               Draw2 ->
                                 maybe
                                   []
-                                  (\x -> [Model $ handleSpecialDrawCards x 2])
+                                  (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
                                   $ updatedWildcardInfo scc
               )
             else []
@@ -320,12 +322,13 @@ handleEvent _ _ model evt = case evt of
           Wild -> [Model model', Event $ AppChangeScene SPlay]
           WildDraw4 ->
             -- TODO: Check why we can't simply use `hft` to link the lens in setter
-            [ Model $ handleSpecialDrawCards model' 4,
+            [ Model $ handleSpecialDrawCards model' 4 & toNextTurn,
               Event $ AppChangeScene SPlay
             ]
     where
       gs = model.gameState
       model' = model & ((#gameState . #wildcardColor) ?~ cc)
+      toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
