@@ -128,42 +128,42 @@ cardAsUnkBtn Card {kind} =
     CWild x -> wcAsUnkBtn x
     CColored x -> ccAsUnkBtn x
 
-gameBoard ::
-  ( HasField "hand" r1 (Vector Card),
-    HasField "hand" r2 (Vector Card),
-    HasField "computer" r3 r1,
-    HasField "deck" r3 [Card],
-    HasField "drawPile" r3 [Card],
-    HasField "player" r3 r2,
-    HasField "turn" r3 Turn,
-    HasField "gameState" p r3
-  ) =>
-  p ->
-  WidgetNode s AppEvent
 gameBoard model =
   scroll $
     vstack
       [ separatorLine,
         spacer,
-        hstack $ (\x -> if gs.turn == TPlayer then cardAsUnkBtn x AppIgnore else cardAsBtn x $ AppClickCard x) <$> V.toList gs.computer.hand,
+        hstack $
+          ( \x ->
+              if gs.turn == TPlayer
+                then cardAsUnkBtn x AppIgnore
+                else cardAsBtn x $ AppClickCard x
+          )
+            <$> V.toList gs.computer.hand,
         spacer,
         separatorLine,
         spacer,
         hstack
           [ case gs.deck of
-              [] -> label "Empty deck!"
-              (x : _) -> hstack [cardAsBtn x $ AppClickCard x],
+              [] -> label "Empty draw pile!"
+              (x : _) -> hstack [cardAsUnkBtn x $ AppClickCard x],
             spacer,
             separatorLine,
             spacer,
             case gs.drawPile of
               [] -> label "Empty draw pile!"
-              (x : _) -> hstack [cardAsBtn x $ AppClickCard x]
+              (x : _) -> hstack [cardAsBtn x AppIgnore]
           ],
         spacer,
         separatorLine,
         spacer,
-        hstack $ (\x -> cardAsBtn x $ AppClickCard x) <$> V.toList gs.player.hand,
+        hstack $
+          ( \x ->
+              if gs.turn == TComputer
+                then cardAsUnkBtn x AppIgnore
+                else cardAsBtn x $ AppClickCard x
+          )
+            <$> V.toList gs.player.hand,
         spacer,
         separatorLine
       ]
