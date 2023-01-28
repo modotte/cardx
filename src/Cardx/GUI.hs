@@ -279,7 +279,7 @@ handleEvent _ _ model evt = case evt of
                         & #gameState . #drawPile .~ ndp
                     updatedWildcardInfo scc =
                       case gs.wildcardColor of
-                        Nothing -> model'
+                        Nothing -> Just model'
                         Just wcc ->
                           -- TODO: Decide if want to allow non-face card stacking.
                           -- Also, I think we should discard WildDraw4 penalties for this game.
@@ -288,7 +288,8 @@ handleEvent _ _ model evt = case evt of
                               model'
                                 & #gameState . #wildcardColor .~ Nothing
                                 & #gameState . #wildcardKind .~ Nothing
-                            else model
+                                & Just
+                            else Nothing
                  in case selectedCardKind of
                       CWild (WildCard {kind}) ->
                         [ Model $
@@ -297,17 +298,17 @@ handleEvent _ _ model evt = case evt of
                         ]
                       CColored scc ->
                         case getColoredKind scc of
-                          CKFaceCard _ -> [Model $ updatedWildcardInfo scc]
+                          CKFaceCard _ ->
+                            maybe [] (\x -> [Model x]) $ updatedWildcardInfo scc
                           CKActionCard (ActionCard {kind}) ->
                             case kind of
                               Skip ->
-                                [Model $ updatedWildcardInfo scc]
-                              -- FIXME: Selected draw2 cards didn't get added to draw pile
-                              -- only after WildDraw4 has been used.
+                                maybe [] (\x -> [Model x]) $ updatedWildcardInfo scc
                               Draw2 ->
-                                [ Model $
-                                    handleSpecialDrawCards (updatedWildcardInfo scc) 2
-                                ]
+                                maybe
+                                  []
+                                  (\x -> [Model $ handleSpecialDrawCards x 2])
+                                  $ updatedWildcardInfo scc
               )
             else []
         )
