@@ -6,6 +6,7 @@ module Cardx.GUI (launchGUI) where
 
 import Cardx.Constant qualified as CC
 import Cardx.Model
+import Cardx.WildKind
 import Control.Lens
 import Data.Default.Class qualified as D
 import Data.Generics.Labels ()
@@ -287,9 +288,22 @@ handleEvent _ _ model evt = case evt of
             else []
         )
   AppPickWildCardColor cc ->
-    [ Model $ model & ((#gameState . #wildcardColor) ?~ cc),
-      Event $ AppChangeScene SPlay
-    ]
+    case gs.wildcardKind of
+      Nothing -> []
+      Just wck ->
+        case wck of
+          Wild -> [Model model', Event $ AppChangeScene SPlay]
+          WildDraw4 ->
+            -- TODO: Check why we can't simply use `hft` to link the lens in setter
+            [ Model $ model' & #gameState . handFromTurn (nextTurn gs.turn) . #hand .~ h,
+              Event $ AppChangeScene SPlay
+            ]
+    where
+      gs = model.gameState
+      model' = model & ((#gameState . #wildcardColor) ?~ cc)
+      hft = handFromTurn $ nextTurn gs.turn
+      n = 4
+      (_, h) = unsafeF n (gs.deck, model ^. #gameState . hft . #hand)
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
