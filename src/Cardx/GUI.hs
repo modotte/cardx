@@ -232,111 +232,111 @@ handleEvent ::
   AppModel ->
   AppEvent ->
   [AppEventResponse AppModel AppEvent]
-handleEvent _ _ model evt = case evt of
-  AppInit -> []
-  AppPickDealer ->
-    [ Model $
-        model
-          & #hasPickedDealer .~ True
-          & #gameState . #dealer .~ dealer
-          & #gameState . #turn .~ firstTurn dealer,
-      Event AppDealCards
-    ]
-    where
-      -- TODO: Make sure to shuffle deck pre-and-post dealing, which in turn
-      -- will randomize the dealer and hands.
+handleEvent _ _ model evt =
+  let gs = model.gameState
+   in case evt of
+        AppInit -> []
+        AppPickDealer ->
+          [ Model $
+              model
+                & #hasPickedDealer .~ True
+                & #gameState . #dealer .~ dealer
+                & #gameState . #turn .~ firstTurn dealer,
+            Event AppDealCards
+          ]
+          where
+            -- TODO: Make sure to shuffle deck pre-and-post dealing, which in turn
+            -- will randomize the dealer and hands.
 
-      n = 1
-      (d, ph) = unsafeF n (model.gameState.deck, V.empty)
-      (_, ch) = unsafeF n (d, V.empty)
-      dealer = pickDealer (ph ! 0) (ch ! 0)
-  AppDealCards ->
-    [ Model $
-        model
-          & #gameState . #player . #hand .~ ph
-          & #gameState . #computer . #hand .~ ch
-          & #gameState . #deck .~ d''
-          & #gameState . #drawPile .~ [tc ! 0]
-    ]
-    where
-      n = 7
-      (d, ph) = unsafeF n (model.gameState.deck, V.empty)
-      (d', ch) = unsafeF n (d, V.empty)
-      (d'', tc) = unsafeF 1 (d', V.empty)
-  AppClickCard selectedCard@Card {id, kind = selectedCardKind} ->
-    let gs = model.gameState
-        pileTopCard =
-          case gs.drawPile of
-            [] -> selectedCard
-            (x : _) -> x
-     in ( if isValidPattern selectedCard pileTopCard
-            then
-              ( let nh = V.filter (\c -> c.id /= id) gs.player.hand
-                    -- This cannot fail (player selection), so we default to the same card
-                    ndp = selectedCard : gs.drawPile
-                    model' =
-                      model
-                        & #gameState . (handFromTurn gs.turn) . #hand .~ nh
-                        & #gameState . #drawPile .~ ndp
-                    toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
-                    updatedWildcardInfo scc =
-                      case gs.wildcardColor of
-                        Nothing -> Just model'
-                        Just wcc ->
-                          -- TODO: Decide if want to allow non-face card stacking.
-                          -- Also, I think we should discard WildDraw4 penalties for this game.
-                          if eqColor scc wcc
-                            then
-                              model'
-                                & #gameState . #wildcardColor .~ Nothing
-                                & #gameState . #wildcardKind .~ Nothing
-                                & Just
-                            else Nothing
-                 in case selectedCardKind of
-                      CWild (WildCard {kind}) ->
-                        [ Model $
-                            model' & ((#gameState . #wildcardKind) ?~ kind),
-                          Event $ AppChangeScene SPickWildCardColor
-                        ]
-                      CColored scc ->
-                        case getColoredKind scc of
-                          CKFaceCard _ ->
-                            maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildcardInfo scc
-                          CKActionCard (ActionCard {kind}) ->
-                            case kind of
-                              Skip ->
-                                maybe [] (\x -> [Model x]) $ updatedWildcardInfo scc
-                              Draw2 ->
-                                maybe
-                                  []
-                                  (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
-                                  $ updatedWildcardInfo scc
+            n = 1
+            (d, ph) = unsafeF n (gs.deck, V.empty)
+            (_, ch) = unsafeF n (d, V.empty)
+            dealer = pickDealer (ph ! 0) (ch ! 0)
+        AppDealCards ->
+          [ Model $
+              model
+                & #gameState . #player . #hand .~ ph
+                & #gameState . #computer . #hand .~ ch
+                & #gameState . #deck .~ d''
+                & #gameState . #drawPile .~ [tc ! 0]
+          ]
+          where
+            n = 7
+            (d, ph) = unsafeF n (gs.deck, V.empty)
+            (d', ch) = unsafeF n (d, V.empty)
+            (d'', tc) = unsafeF 1 (d', V.empty)
+        AppClickCard selectedCard@Card {id, kind = selectedCardKind} ->
+          let pileTopCard =
+                case gs.drawPile of
+                  [] -> selectedCard
+                  (x : _) -> x
+           in ( if isValidPattern selectedCard pileTopCard
+                  then
+                    ( let nh = V.filter (\c -> c.id /= id) gs.player.hand
+                          -- This cannot fail (player selection), so we default to the same card
+                          ndp = selectedCard : gs.drawPile
+                          model' =
+                            model
+                              & #gameState . (handFromTurn gs.turn) . #hand .~ nh
+                              & #gameState . #drawPile .~ ndp
+                          toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
+                          updatedWildcardInfo scc =
+                            case gs.wildcardColor of
+                              Nothing -> Just model'
+                              Just wcc ->
+                                -- TODO: Decide if want to allow non-face card stacking.
+                                -- Also, I think we should discard WildDraw4 penalties for this game.
+                                if eqColor scc wcc
+                                  then
+                                    model'
+                                      & #gameState . #wildcardColor .~ Nothing
+                                      & #gameState . #wildcardKind .~ Nothing
+                                      & Just
+                                  else Nothing
+                       in case selectedCardKind of
+                            CWild (WildCard {kind}) ->
+                              [ Model $
+                                  model' & ((#gameState . #wildcardKind) ?~ kind),
+                                Event $ AppChangeScene SPickWildCardColor
+                              ]
+                            CColored scc ->
+                              case getColoredKind scc of
+                                CKFaceCard _ ->
+                                  maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildcardInfo scc
+                                CKActionCard (ActionCard {kind}) ->
+                                  case kind of
+                                    Skip ->
+                                      maybe [] (\x -> [Model x]) $ updatedWildcardInfo scc
+                                    Draw2 ->
+                                      maybe
+                                        []
+                                        (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
+                                        $ updatedWildcardInfo scc
+                    )
+                  else []
               )
-            else []
-        )
-  AppPickWildCardColor cc ->
-    case gs.wildcardKind of
-      Nothing -> []
-      Just wck ->
-        case wck of
-          Wild -> [Model model', Event $ AppChangeScene SPlay]
-          WildDraw4 ->
-            -- TODO: Check why we can't simply use `hft` to link the lens in setter
-            [ Model $ handleSpecialDrawCards model' 4 & toNextTurn,
-              Event $ AppChangeScene SPlay
-            ]
-    where
-      gs = model.gameState
-      model' = model & ((#gameState . #wildcardColor) ?~ cc)
-      toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
-  AppChangeScene scene ->
-    let changeScene s = Model $ model & #currentScene .~ s
-     in case scene of
-          SMenu -> [Model initialModel]
-          SPickDealer -> [changeScene SPickDealer]
-          SPlay -> [changeScene SPlay]
-          SPickWildCardColor -> [changeScene SPickWildCardColor]
-          SEnd -> [changeScene SEnd]
+        AppPickWildCardColor cc ->
+          case gs.wildcardKind of
+            Nothing -> []
+            Just wck ->
+              case wck of
+                Wild -> [Model model', Event $ AppChangeScene SPlay]
+                WildDraw4 ->
+                  -- TODO: Check why we can't simply use `hft` to link the lens in setter
+                  [ Model $ handleSpecialDrawCards model' 4 & toNextTurn,
+                    Event $ AppChangeScene SPlay
+                  ]
+          where
+            model' = model & ((#gameState . #wildcardColor) ?~ cc)
+            toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
+        AppChangeScene scene ->
+          let changeScene s = Model $ model & #currentScene .~ s
+           in case scene of
+                SMenu -> [Model initialModel]
+                SPickDealer -> [changeScene SPickDealer]
+                SPlay -> [changeScene SPlay]
+                SPickWildCardColor -> [changeScene SPickWildCardColor]
+                SEnd -> [changeScene SEnd]
 
 launchGUI :: IO ()
 launchGUI = do
