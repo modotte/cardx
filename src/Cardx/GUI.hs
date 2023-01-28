@@ -269,7 +269,7 @@ handleEvent _ _ model evt = case evt of
           case gs.drawPile of
             [] -> selectedCard
             (x : _) -> x
-     in ( if isMatchShape selectedCard pileTopCard
+     in ( if isValidPattern selectedCard pileTopCard
             then
               ( let nh = V.filter (\c -> c.id /= id) gs.player.hand
                     -- This cannot fail (player selection), so we default to the same card

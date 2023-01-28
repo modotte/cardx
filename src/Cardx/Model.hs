@@ -23,7 +23,7 @@ module Cardx.Model
     firstTurn,
     drawNFromDeck,
     eqColor,
-    isMatchShape,
+    isValidPattern,
     getColoredKind,
     isEqualColoredKind,
   )
@@ -206,8 +206,8 @@ isEqualColoredKind m n =
               ka == kb
             _ -> False
 
-isMatchShape :: Card -> Card -> Bool
-isMatchShape
+isValidPattern :: Card -> Card -> Bool
+isValidPattern
   Card {kind = card1}
   Card {kind = card2} =
     case card1 of
