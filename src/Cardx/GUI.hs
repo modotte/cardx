@@ -183,6 +183,10 @@ pickWildCardColorScene model =
     kindText = maybe "" TS.showt $ model.gameState.wildcardKind
     defCK = CKFaceCard $ FaceCard {kind = 0, score = 1}
 
+handFromTurn :: (IsLabel "computer" a, IsLabel "player" a) => Turn -> a
+handFromTurn TPlayer = #player
+handFromTurn TComputer = #computer
+
 buildUI ::
   WidgetEnv AppModel AppEvent ->
   AppModel ->
@@ -258,7 +262,7 @@ handleEvent _ _ model evt = case evt of
                     ndp = selectedCard : gs.drawPile
                     model' =
                       model
-                        & #gameState . #player . #hand .~ nh
+                        & #gameState . (handFromTurn gs.turn) . #hand .~ nh
                         & #gameState . #drawPile .~ ndp
                  in case selectedCardKind of
                       CWild (WildCard {kind}) ->
