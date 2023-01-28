@@ -1,3 +1,5 @@
 - Move private types and functions into their own *Internal* modules
 - Check perfect-vector-shuffle (currently blocked by base <= 4.9)
   for faster shuffling, but random-shuffle on list will do for now.
+- Tally scores.
+- Prohibit players to stack any non face cards except Skip card.
