@@ -80,14 +80,25 @@ pickDealerScene model =
 cardTextColor :: StyleState
 cardTextColor = textColor white
 
+specialCardStyle :: [StyleState]
+specialCardStyle = cardTextColor : [bgColor black]
+
 -- TODO: Show score on cards
 wcAsBtn :: Typeable e => WildCard -> e -> WidgetNode s e
 wcAsBtn (WildCard {kind, score}) evt =
-  button (TS.showt kind) evt `styleBasic` (cardTextColor : [bgColor black])
+  button (TS.showt kind) evt `styleBasic` specialCardStyle
+
+wcAsUnkBtn :: Typeable e => WildCard -> e -> WidgetNode s e
+wcAsUnkBtn (WildCard {}) evt =
+  button "?" evt `styleBasic` specialCardStyle
 
 ckAsBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
 ckAsBtn (CKActionCard (ActionCard {kind, score})) = button $ TS.showt kind
 ckAsBtn (CKFaceCard (FaceCard {kind, score})) = button $ TS.showt kind
+
+ckAsUnkBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
+ckAsUnkBtn (CKActionCard (ActionCard {})) = button "?"
+ckAsUnkBtn (CKFaceCard (FaceCard {})) = button "?"
 
 ccAsBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
 ccAsBtn (RedCard x) evt =
@@ -99,60 +110,65 @@ ccAsBtn (GreenCard x) evt =
 ccAsBtn (BlueCard x) evt =
   ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor blue])
 
+ccAsUnkBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
+ccAsUnkBtn cc evt = btn evt `styleBasic` specialCardStyle
+  where
+    btn = ckAsUnkBtn $ getColoredKind cc
+
 cardAsBtn :: Card -> WidgetNode s AppEvent
 cardAsBtn card@Card {kind} =
   case kind of
     CWild x -> wcAsBtn x $ AppClickCard card
     CColored x -> ccAsBtn x $ AppClickCard card
 
+cardAsUnkBtn :: Card -> WidgetNode s AppEvent
+cardAsUnkBtn card@Card {kind} =
+  case kind of
+    CWild x -> wcAsUnkBtn x $ AppClickCard card
+    CColored x -> ccAsUnkBtn x $ AppClickCard card
+
 gameBoard ::
-  ( Traversable t1,
-    Traversable t2,
-    HasField "hand" r1 (Vector Card),
+  ( HasField "hand" r1 (Vector Card),
     HasField "hand" r2 (Vector Card),
-    HasField "computer" r3 r2,
-    HasField "deck" r3 (t1 Card),
-    HasField "drawPile" r3 (t2 Card),
-    HasField "player" r3 r1,
-    HasField "gameState" r4 r3
+    HasField "computer" r3 r1,
+    HasField "deck" r3 [Card],
+    HasField "drawPile" r3 [Card],
+    HasField "player" r3 r2,
+    HasField "gameState" p r3
   ) =>
-  r4 ->
+  p ->
   WidgetNode s AppEvent
 gameBoard model =
   scroll $
     vstack
-      [ hstack $ cardAsBtn <$> V.toList gs.computer.hand,
+      [ separatorLine,
         spacer,
-        vstack
-          [ hstack $ cardAsBtn <$> gs.deck,
+        hstack $ cardAsUnkBtn <$> V.toList gs.computer.hand,
+        spacer,
+        separatorLine,
+        spacer,
+        hstack
+          [ case gs.deck of
+              [] -> label "Empty deck!"
+              (x : _) -> hstack [cardAsUnkBtn x],
             spacer,
-            hstack $ cardAsBtn <$> gs.drawPile
+            separatorLine,
+            spacer,
+            case gs.drawPile of
+              [] -> label "Empty draw pile!"
+              (x : _) -> hstack [cardAsBtn x]
           ],
         spacer,
-        hstack $ cardAsBtn <$> V.toList gs.player.hand
+        separatorLine,
+        spacer,
+        hstack $ cardAsBtn <$> V.toList gs.player.hand,
+        spacer,
+        separatorLine
       ]
       `styleBasic` [padding 10]
   where
     gs = model.gameState
 
-playScene ::
-  ( Traversable t2,
-    Traversable t1,
-    TS.TextShow a1,
-    TS.TextShow a2,
-    HasField "score" r1 a1,
-    HasField "score" r2 a2,
-    HasField "hand" r1 (Vector Card),
-    HasField "hand" r2 (Vector Card),
-    HasField "computer" r3 r1,
-    HasField "deck" r3 (t1 Card),
-    HasField "drawPile" r3 (t2 Card),
-    HasField "player" r3 r2,
-    HasField "turn" r3 Turn,
-    HasField "gameState" r4 r3
-  ) =>
-  r4 ->
-  WidgetNode s AppEvent
 playScene model =
   vstack
     [ label $ "Win score: " <> TS.showt CC.maxScore,
