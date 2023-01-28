@@ -2,4 +2,8 @@
 - Check perfect-vector-shuffle (currently blocked by base <= 4.9)
   for faster shuffling, but random-shuffle on list will do for now.
 - Tally scores.
-- Prohibit players to stack any non face cards except Skip card.
+
+Custom rules:
+  - No need to signal `UNO` when the player left with one card.
+  - Standard penalties doesn't exist.
+  - Prohibit players to stack any cards except Skip card. (apparently official rule?)
