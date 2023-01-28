@@ -40,7 +40,8 @@ data AppEvent
   | AppIgnore
   | AppPickDealer
   | AppDealCards
-  | AppClickCard Card
+  | AppClickDeckCard
+  | AppClickHandCard Card
   | AppPickWildCardColor ColoredCard
   | AppChangeScene Scene
   deriving (Show, Eq)
@@ -137,7 +138,7 @@ gameBoard model =
           ( \x ->
               if gs.turn == TPlayer
                 then cardAsUnkBtn x AppIgnore
-                else cardAsBtn x $ AppClickCard x
+                else cardAsBtn x $ AppClickHandCard x
           )
             <$> V.toList gs.computer.hand,
         spacer,
@@ -146,7 +147,7 @@ gameBoard model =
         hstack
           [ case gs.deck of
               [] -> label "Empty draw pile!"
-              (x : _) -> hstack [cardAsUnkBtn x $ AppClickCard x],
+              (x : _) -> hstack [cardAsUnkBtn x AppClickDeckCard],
             spacer,
             separatorLine,
             spacer,
@@ -161,7 +162,7 @@ gameBoard model =
           ( \x ->
               if gs.turn == TComputer
                 then cardAsUnkBtn x AppIgnore
-                else cardAsBtn x $ AppClickCard x
+                else cardAsBtn x $ AppClickHandCard x
           )
             <$> V.toList gs.player.hand,
         spacer,
@@ -283,7 +284,15 @@ handleEvent _ _ model evt =
             (d, ph) = unsafeF n (gs.deck, V.empty)
             (d', ch) = unsafeF n (d, V.empty)
             (d'', tc) = unsafeF 1 (d', V.empty)
-        AppClickCard selectedCard@Card {id, kind = selectedCardKind} ->
+        AppClickDeckCard ->
+          [ Model $
+              model
+                & #gameState . (handFromTurn gs.turn) . #hand .~ h
+                & #gameState . #deck .~ d
+          ]
+          where
+            (d, h) = unsafeF 1 (gs.deck, model ^. #gameState . (handFromTurn gs.turn) . #hand)
+        AppClickHandCard selectedCard@Card {id, kind = selectedCardKind} ->
           let pileTopCard =
                 case gs.drawPile of
                   [] -> selectedCard
