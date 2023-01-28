@@ -37,6 +37,7 @@ data Scene
 
 data AppEvent
   = AppInit
+  | AppIgnore
   | AppPickDealer
   | AppDealCards
   | AppClickCard Card
@@ -115,17 +116,17 @@ ccAsUnkBtn cc evt = btn evt `styleBasic` specialCardStyle
   where
     btn = ckAsUnkBtn $ getColoredKind cc
 
-cardAsBtn :: Card -> WidgetNode s AppEvent
-cardAsBtn card@Card {kind} =
+cardAsBtn :: Typeable e => Card -> e -> WidgetNode s e
+cardAsBtn Card {kind} =
   case kind of
-    CWild x -> wcAsBtn x $ AppClickCard card
-    CColored x -> ccAsBtn x $ AppClickCard card
+    CWild x -> wcAsBtn x
+    CColored x -> ccAsBtn x
 
-cardAsUnkBtn :: Card -> WidgetNode s AppEvent
-cardAsUnkBtn card@Card {kind} =
+cardAsUnkBtn :: Typeable e => Card -> e -> WidgetNode s e
+cardAsUnkBtn Card {kind} =
   case kind of
-    CWild x -> wcAsUnkBtn x $ AppClickCard card
-    CColored x -> ccAsUnkBtn x $ AppClickCard card
+    CWild x -> wcAsUnkBtn x
+    CColored x -> ccAsUnkBtn x
 
 gameBoard ::
   ( HasField "hand" r1 (Vector Card),
@@ -134,6 +135,7 @@ gameBoard ::
     HasField "deck" r3 [Card],
     HasField "drawPile" r3 [Card],
     HasField "player" r3 r2,
+    HasField "turn" r3 Turn,
     HasField "gameState" p r3
   ) =>
   p ->
@@ -143,25 +145,25 @@ gameBoard model =
     vstack
       [ separatorLine,
         spacer,
-        hstack $ cardAsUnkBtn <$> V.toList gs.computer.hand,
+        hstack $ (\x -> if gs.turn == TPlayer then cardAsUnkBtn x AppIgnore else cardAsBtn x $ AppClickCard x) <$> V.toList gs.computer.hand,
         spacer,
         separatorLine,
         spacer,
         hstack
           [ case gs.deck of
               [] -> label "Empty deck!"
-              (x : _) -> hstack [cardAsUnkBtn x],
+              (x : _) -> hstack [cardAsBtn x $ AppClickCard x],
             spacer,
             separatorLine,
             spacer,
             case gs.drawPile of
               [] -> label "Empty draw pile!"
-              (x : _) -> hstack [cardAsBtn x]
+              (x : _) -> hstack [cardAsBtn x $ AppClickCard x]
           ],
         spacer,
         separatorLine,
         spacer,
-        hstack $ cardAsBtn <$> V.toList gs.player.hand,
+        hstack $ (\x -> cardAsBtn x $ AppClickCard x) <$> V.toList gs.player.hand,
         spacer,
         separatorLine
       ]
@@ -251,6 +253,7 @@ handleEvent _ _ model evt =
   let gs = model.gameState
    in case evt of
         AppInit -> []
+        AppIgnore -> []
         AppPickDealer ->
           [ Model $
               model
