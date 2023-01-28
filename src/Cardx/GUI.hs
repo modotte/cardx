@@ -234,22 +234,22 @@ handleEvent _ _ model evt = case evt of
       -- will randomize the dealer and hands.
 
       n = 1
-      (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
-      (_, ch) = unsafeF n (xs, V.empty)
+      (d, ph) = unsafeF n (model.gameState.deck, V.empty)
+      (_, ch) = unsafeF n (d, V.empty)
       dealer = pickDealer (ph ! 0) (ch ! 0)
   AppDealCards ->
     [ Model $
         model
           & #gameState . #player . #hand .~ ph
           & #gameState . #computer . #hand .~ ch
-          & #gameState . #deck .~ xs''
+          & #gameState . #deck .~ d''
           & #gameState . #drawPile .~ [tc ! 0]
     ]
     where
       n = 7
-      (xs, ph) = unsafeF n (model.gameState.deck, V.empty)
-      (xs', ch) = unsafeF n (xs, V.empty)
-      (xs'', tc) = unsafeF 1 (xs', V.empty)
+      (d, ph) = unsafeF n (model.gameState.deck, V.empty)
+      (d', ch) = unsafeF n (d, V.empty)
+      (d'', tc) = unsafeF 1 (d', V.empty)
   AppClickCard selectedCard@Card {id, kind = selectedCardKind} ->
     let gs = model.gameState
         pileTopCard =
