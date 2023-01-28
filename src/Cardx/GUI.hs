@@ -271,13 +271,14 @@ handleEvent _ _ model evt =
                   (x : _) -> x
            in ( if isValidPattern selectedCard pileTopCard
                   then
-                    ( let nh = V.filter (\c -> c.id /= id) gs.player.hand
+                    ( let nh = V.filter (\c -> c.id /= id) $ model ^. #gameState . (handFromTurn gs.turn) . #hand
                           -- This cannot fail (player selection), so we default to the same card
                           ndp = selectedCard : gs.drawPile
                           model' =
                             model
                               & #gameState . (handFromTurn gs.turn) . #hand .~ nh
                               & #gameState . #drawPile .~ ndp
+
                           toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
                           updatedWildcardInfo scc =
                             case gs.wildcardColor of
@@ -319,7 +320,7 @@ handleEvent _ _ model evt =
             Nothing -> []
             Just wck ->
               case wck of
-                Wild -> [Model model', Event $ AppChangeScene SPlay]
+                Wild -> [Model $ model' & toNextTurn, Event $ AppChangeScene SPlay]
                 WildDraw4 ->
                   -- TODO: Check why we can't simply use `hft` to link the lens in setter
                   [ Model $ handleSpecialDrawCards model' 4 & toNextTurn,

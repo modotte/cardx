@@ -360,14 +360,38 @@ main = hspec $ do
 
     CM.isEqualColoredKind x y `shouldBe` True
 
-  it "isMatchShape (unmatching color and colorkind)" $ do
+  it "isValidPattern (unmatching color and colorkind)" $ do
     let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
         y = Card {id = 56, kind = CColored (RedCard (CKFaceCard (FaceCard {kind = 2, score = 6})))}
 
-    CM.isMatchShape x y `shouldBe` False
+    CM.isValidPattern x y `shouldBe` False
 
-  it "isMatchShape (colored and wildcard)" $ do
+  it "isValidPattern (colored and wildcard)" $ do
     let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
         y = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
 
-    CM.isMatchShape x y `shouldBe` True
+    CM.isValidPattern x y `shouldBe` True
+
+  it "isValidPattern (wilddraw4 on top of another)" $ do
+    let x = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
+        y = Card {id = 7, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
+
+    CM.isValidPattern x y `shouldBe` False
+
+  it "isValidPattern (wild on top of another)" $ do
+    let x = Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}
+        y = Card {id = 4, kind = CWild (WildCard {kind = Wild, score = 0})}
+
+    CM.isValidPattern x y `shouldBe` False
+
+  it "isValidPattern (wild on top of another wilddraw4 and vice versa)" $ do
+    let x = Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}
+        y = Card {id = 7, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
+
+    CM.isValidPattern x y `shouldBe` False
+
+  it "isValidPattern (draw2)" $ do
+    let x = Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}
+        y = Card {id = 7, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
+
+    CM.isValidPattern x y `shouldBe` False
