@@ -214,6 +214,17 @@ unsafeF n x =
   fromMaybe ([], V.empty) $
     (execState (sequence $ drawNFromDeck n) . Just) x
 
+handleSpecialDrawCards :: AppModel -> Natural -> AppModel
+handleSpecialDrawCards model n =
+  model
+    -- TODO: Check why we can't simply use `hft` to link the lens in setter.
+    & #gameState . handFromTurn (nextTurn gs.turn) . #hand .~ h
+    & #gameState . #deck .~ d
+  where
+    gs = model.gameState
+    hft = handFromTurn $ nextTurn gs.turn
+    (d, h) = unsafeF n (gs.deck, model ^. #gameState . hft . #hand)
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -266,7 +277,7 @@ handleEvent _ _ model evt = case evt of
                       model
                         & #gameState . (handFromTurn gs.turn) . #hand .~ nh
                         & #gameState . #drawPile .~ ndp
-                    checkWildCardColor scc =
+                    updatedWildcardInfo scc =
                       case gs.wildcardColor of
                         Nothing -> model'
                         Just wcc ->
@@ -286,11 +297,17 @@ handleEvent _ _ model evt = case evt of
                         ]
                       CColored scc ->
                         case getColoredKind scc of
-                          CKFaceCard _ -> [Model $ checkWildCardColor scc]
+                          CKFaceCard _ -> [Model $ updatedWildcardInfo scc]
                           CKActionCard (ActionCard {kind}) ->
                             case kind of
                               Skip ->
-                                [Model $ checkWildCardColor scc]
+                                [Model $ updatedWildcardInfo scc]
+                              -- FIXME: Selected draw2 cards didn't get added to draw pile
+                              -- only after WildDraw4 has been used.
+                              Draw2 ->
+                                [ Model $
+                                    handleSpecialDrawCards (updatedWildcardInfo scc) 2
+                                ]
               )
             else []
         )
@@ -302,18 +319,12 @@ handleEvent _ _ model evt = case evt of
           Wild -> [Model model', Event $ AppChangeScene SPlay]
           WildDraw4 ->
             -- TODO: Check why we can't simply use `hft` to link the lens in setter
-            [ Model $
-                model'
-                  & #gameState . handFromTurn (nextTurn gs.turn) . #hand .~ h
-                  & #gameState . #deck .~ d,
+            [ Model $ handleSpecialDrawCards model' 4,
               Event $ AppChangeScene SPlay
             ]
     where
       gs = model.gameState
       model' = model & ((#gameState . #wildcardColor) ?~ cc)
-      hft = handFromTurn $ nextTurn gs.turn
-      n = 4
-      (d, h) = unsafeF n (gs.deck, model ^. #gameState . hft . #hand)
   AppChangeScene scene ->
     let changeScene s = Model $ model & #currentScene .~ s
      in case scene of
