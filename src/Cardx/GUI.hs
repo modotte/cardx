@@ -4,6 +4,7 @@
 
 module Cardx.GUI (launchGUI) where
 
+import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.Model
 import Cardx.WildKind
@@ -265,6 +266,18 @@ handleEvent _ _ model evt = case evt of
                       model
                         & #gameState . (handFromTurn gs.turn) . #hand .~ nh
                         & #gameState . #drawPile .~ ndp
+                    checkWildCardColor scc =
+                      case gs.wildcardColor of
+                        Nothing -> model'
+                        Just wcc ->
+                          -- TODO: Decide if want to allow non-face card stacking.
+                          -- Also, I think we should discard WildDraw4 penalties for this game.
+                          if eqColor scc wcc
+                            then
+                              model'
+                                & #gameState . #wildcardColor .~ Nothing
+                                & #gameState . #wildcardKind .~ Nothing
+                            else model
                  in case selectedCardKind of
                       CWild (WildCard {kind}) ->
                         [ Model $
@@ -272,16 +285,12 @@ handleEvent _ _ model evt = case evt of
                           Event $ AppChangeScene SPickWildCardColor
                         ]
                       CColored scc ->
-                        case gs.wildcardColor of
-                          Nothing -> [Model model']
-                          Just wcc ->
-                            -- TODO: Decide if want to allow non-face card stacking.
-                            [ Model $
-                                model'
-                                  & #gameState . #wildcardColor .~ Nothing
-                                  & #gameState . #wildcardKind .~ Nothing
-                              | eqColor scc wcc
-                            ]
+                        case getColoredKind scc of
+                          CKFaceCard _ -> [Model $ checkWildCardColor scc]
+                          CKActionCard (ActionCard {kind}) ->
+                            case kind of
+                              Skip ->
+                                [Model $ checkWildCardColor scc]
               )
             else []
         )
