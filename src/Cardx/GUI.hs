@@ -12,6 +12,7 @@ import Cardx.WildKind (WildKind (..))
 import Control.Lens
 import Data.Default.Class qualified as D
 import Data.Generics.Labels ()
+import Data.Generics.Product.Fields qualified as GLF
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Vector (Vector, (!))
@@ -19,7 +20,6 @@ import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
 import Relude hiding (id, (&))
-import System.Random (StdGen)
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
@@ -88,10 +88,8 @@ cardTextColor = textColor white
 specialCardStyle :: [StyleState]
 specialCardStyle = cardTextColor : [bgColor black]
 
-choice :: R.RandomGen b => b -> [a] -> Maybe a
-choice rng xs = xs !!? fst (R.randomR (0, length xs) rng)
-
 -- TODO: Show score on cards
+wcAsBtn :: Typeable e => Maybe ColoredCard -> WildCard -> e -> WidgetNode s e
 wcAsBtn mwcc (WildCard {kind, score}) evt =
   btn `styleBasic` style
   where
@@ -145,6 +143,19 @@ cardAsUnkBtn Card {kind} =
     CWild x -> wcAsUnkBtn x
     CColored x -> ccAsUnkBtn x
 
+gameBoard ::
+  ( HasField "hand" r1 (Vector Card),
+    HasField "hand" r2 (Vector Card),
+    HasField "computer" r3 r1,
+    HasField "deck" r3 [Card],
+    HasField "drawPile" r3 [Card],
+    HasField "player" r3 r2,
+    HasField "turn" r3 Turn,
+    HasField "wildcardColor" r3 (Maybe ColoredCard),
+    HasField "gameState" r4 r3
+  ) =>
+  r4 ->
+  WidgetNode s AppEvent
 gameBoard model =
   scroll $
     vstack
@@ -188,6 +199,23 @@ gameBoard model =
   where
     gs = model.gameState
 
+playScene ::
+  ( TS.TextShow a1,
+    TS.TextShow a2,
+    HasField "score" r1 a1,
+    HasField "score" r2 a2,
+    HasField "hand" r1 (Vector Card),
+    HasField "hand" r2 (Vector Card),
+    HasField "computer" r3 r1,
+    HasField "deck" r3 [Card],
+    HasField "drawPile" r3 [Card],
+    HasField "player" r3 r2,
+    HasField "turn" r3 Turn,
+    HasField "wildcardColor" r3 (Maybe ColoredCard),
+    HasField "gameState" r4 r3
+  ) =>
+  r4 ->
+  WidgetNode s AppEvent
 playScene model =
   vstack
     [ label $ "Win score: " <> TS.showt CC.maxScore,
@@ -274,6 +302,20 @@ resetEmptyDeck rng drawPile [] =
       ([x], shuffleCards xs rng)
 resetEmptyDeck _ drawPile deck = (drawPile, deck)
 
+updatedWildCardInfo model scc =
+  case mwcc of
+    Nothing -> Just model
+    Just wcc ->
+      if eqColor scc wcc
+        then
+          model
+            & #gameState . #wildcardColor .~ Nothing
+            & #gameState . #wildcardKind .~ Nothing
+            & Just
+        else Nothing
+  where
+    mwcc = model.gameState.wildcardColor
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -338,17 +380,6 @@ handleEvent _ _ model evt =
                               & #gameState . #drawPile .~ ndp
 
                           toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
-                          updatedWildcardInfo scc =
-                            case gs.wildcardColor of
-                              Nothing -> Just model'
-                              Just wcc ->
-                                if eqColor scc wcc
-                                  then
-                                    model'
-                                      & #gameState . #wildcardColor .~ Nothing
-                                      & #gameState . #wildcardKind .~ Nothing
-                                      & Just
-                                  else Nothing
                        in case selectedCardKind of
                             CWild (WildCard {kind}) ->
                               [ Model $
@@ -358,16 +389,16 @@ handleEvent _ _ model evt =
                             CColored scc ->
                               case getColoredKind scc of
                                 CKFaceCard _ ->
-                                  maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildcardInfo scc
+                                  maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildCardInfo model' scc
                                 CKActionCard (ActionCard {kind}) ->
                                   case kind of
                                     Skip ->
-                                      maybe [] (\x -> [Model x]) $ updatedWildcardInfo scc
+                                      maybe [] (\x -> [Model x]) $ updatedWildCardInfo model' scc
                                     Draw2 ->
                                       maybe
                                         []
                                         (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
-                                        $ updatedWildcardInfo scc
+                                        $ updatedWildCardInfo model' scc
                     )
                   else []
               )
