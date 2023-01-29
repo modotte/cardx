@@ -40,6 +40,8 @@ import Data.Generics.Labels ()
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Relude
+import System.Random (StdGen)
+import System.Random qualified as R
 import TextShow (TextShow, showt)
 
 data GameProgression = Win | InProgress | Lose deriving (Show, Eq, Generic)
@@ -87,7 +89,8 @@ data GameState = GameState
     drawPile :: [Card],
     turn :: Turn,
     dealer :: Dealer,
-    progression :: GameProgression
+    progression :: GameProgression,
+    rng :: StdGen
   }
   deriving (Show, Eq, Generic)
 
@@ -102,7 +105,8 @@ instance Default GameState where
         drawPile = [],
         turn = TComputer,
         dealer = DComputer,
-        progression = InProgress
+        progression = InProgress,
+        rng = R.mkStdGen 0
       }
 
 makeWilds :: WildKind -> Vector Card

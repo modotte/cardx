@@ -7,7 +7,7 @@ module Cardx.GUI (launchGUI) where
 import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.Model
-import Cardx.WildKind
+import Cardx.WildKind (WildKind (..))
 import Control.Lens
 import Data.Default.Class qualified as D
 import Data.Generics.Labels ()
@@ -18,6 +18,8 @@ import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
 import Relude hiding (id, (&))
+import System.Random qualified as R
+import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
 
 data AppModel = AppModel
@@ -36,8 +38,7 @@ data Scene
   deriving (Show, Eq)
 
 data AppEvent
-  = AppInit
-  | AppIgnore
+  = AppIgnore
   | AppPickDealer
   | AppDealCards
   | AppClickDeckCard
@@ -156,7 +157,7 @@ gameBoard model =
         spacer,
         hstack
           [ case gs.deck of
-              [] -> label "Empty draw pile!"
+              [] -> label "Empty deck!"
               (x : _) -> hstack [cardAsUnkBtn x AppClickDeckCard],
             spacer,
             separatorLine,
@@ -263,7 +264,6 @@ handleEvent ::
 handleEvent _ _ model evt =
   let gs = model.gameState
    in case evt of
-        AppInit -> []
         AppIgnore -> []
         AppPickDealer ->
           [ Model $
@@ -291,7 +291,8 @@ handleEvent _ _ model evt =
           ]
           where
             n = 7
-            (d, ph) = unsafeF n (gs.deck, V.empty)
+            sd = RS.shuffle' gs.deck (length gs.deck) gs.rng
+            (d, ph) = unsafeF n (sd, V.empty)
             (d', ch) = unsafeF n (d, V.empty)
             (d'', tc) = unsafeF 1 (d', V.empty)
         AppClickDeckCard ->
@@ -370,7 +371,7 @@ handleEvent _ _ model evt =
         AppChangeScene scene ->
           let changeScene s = Model $ model & #currentScene .~ s
            in case scene of
-                SMenu -> [Model initialModel]
+                SMenu -> [changeScene SMenu]
                 SPickDealer -> [changeScene SPickDealer]
                 SPlay -> [changeScene SPlay]
                 SPickWildCardColor -> [changeScene SPickWildCardColor]
@@ -378,12 +379,13 @@ handleEvent _ _ model evt =
 
 launchGUI :: IO ()
 launchGUI = do
+  rng <- R.newStdGen
+  let model = initialModel & #gameState . #rng .~ rng
   startApp model handleEvent buildUI config
   where
-    model = initialModel
     config =
       [ appWindowTitle "Cardx",
         appTheme darkTheme,
         appFontDef "Regular" "./assets/fonts/Roboto-Regular.ttf",
-        appInitEvent AppInit
+        appInitEvent AppIgnore
       ]
