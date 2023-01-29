@@ -36,8 +36,7 @@ dependencies:
   - vector
   - text
   - bytestring
-  - lens
-  - generic-lens
+  - optics
   - monomer
   - text-show
   - random

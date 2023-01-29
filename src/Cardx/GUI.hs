@@ -9,15 +9,15 @@ import Cardx.Constant qualified as CC
 import Cardx.Model
 import Cardx.Util qualified as CU
 import Cardx.WildKind (WildKind (..))
-import Control.Lens
 import Data.Default.Class qualified as D
-import Data.Generics.Labels ()
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Vector (Vector, (!))
 import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
+import Optics
+import Optics.Operators
 import Relude hiding (id, (&))
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
@@ -280,13 +280,12 @@ unsafeF n x =
 handleSpecialDrawCards :: AppModel -> Natural -> AppModel
 handleSpecialDrawCards model n =
   model
-    -- TODO: Check why we can't simply use `hft` to link the lens in setter.
-    & #gameState . handFromTurn (nextTurn gs.turn) . #hand .~ h
-    & #gameState . #deck .~ d
+    & #gameState % hft % #hand .~ h
+    & #gameState % #deck .~ d
   where
     gs = model.gameState
     hft = handFromTurn $ nextTurn gs.turn
-    (d, h) = unsafeF n (gs.deck, model ^. #gameState . hft . #hand)
+    (d, h) = unsafeF n (gs.deck, model ^. #gameState % hft % #hand)
 
 shuffleCards :: R.RandomGen gen => [a] -> gen -> [a]
 shuffleCards deck = RS.shuffle' deck (length deck)
@@ -308,8 +307,8 @@ updatedWildCardInfo model scc =
       if eqColor scc wcc
         then
           model
-            & #gameState . #wildcardColor .~ Nothing
-            & #gameState . #wildcardKind .~ Nothing
+            & #gameState % #wildcardColor .~ Nothing
+            & #gameState % #wildcardKind .~ Nothing
             & Just
         else Nothing
   where
@@ -329,8 +328,8 @@ handleEvent _ _ model evt =
           [ Model $
               model
                 & #hasPickedDealer .~ True
-                & #gameState . #dealer .~ dealer
-                & #gameState . #turn .~ firstTurn dealer,
+                & #gameState % #dealer .~ dealer
+                & #gameState % #turn .~ firstTurn dealer,
             Event AppDealCards
           ]
           where
@@ -341,10 +340,10 @@ handleEvent _ _ model evt =
         AppDealCards ->
           [ Model $
               model
-                & #gameState . #player . #hand .~ ph
-                & #gameState . #computer . #hand .~ ch
-                & #gameState . #deck .~ d''
-                & #gameState . #drawPile .~ [tc ! 0]
+                & #gameState % #player % #hand .~ ph
+                & #gameState % #computer % #hand .~ ch
+                & #gameState % #deck .~ d''
+                & #gameState % #drawPile .~ [tc ! 0]
           ]
           where
             n = 7
@@ -354,35 +353,35 @@ handleEvent _ _ model evt =
         AppClickDeckCard ->
           [ Model $
               model
-                & #gameState . (handFromTurn gs.turn) . #hand .~ h
-                & #gameState . #drawPile .~ fst piles
-                & #gameState . #deck .~ snd piles
+                & #gameState % handFromTurn gs.turn % #hand .~ h
+                & #gameState % #drawPile .~ fst piles
+                & #gameState % #deck .~ snd piles
           ]
           where
             (d, h) =
               unsafeF
                 1
                 ( gs.deck,
-                  model ^. #gameState . (handFromTurn gs.turn) . #hand
+                  model ^. #gameState % handFromTurn gs.turn % #hand
                 )
             piles = resetEmptyDeck gs.rng gs.drawPile d
         AppClickHandCard selectedCard@Card {id, kind = selectedCardKind} ->
           let pileTopCard = CU.defaultIfEmpty selectedCard gs.drawPile
            in ( if isValidPattern selectedCard pileTopCard
                   then
-                    ( let nh = V.filter (\c -> c.id /= id) $ model ^. #gameState . (handFromTurn gs.turn) . #hand
+                    ( let nh = V.filter (\c -> c.id /= id) $ model ^. #gameState % handFromTurn gs.turn % #hand
                           -- This cannot fail (player selection), so we default to the same card
                           ndp = selectedCard : gs.drawPile
                           model' =
                             model
-                              & #gameState . (handFromTurn gs.turn) . #hand .~ nh
-                              & #gameState . #drawPile .~ ndp
+                              & #gameState % (handFromTurn gs.turn) % #hand .~ nh
+                              & #gameState % #drawPile .~ ndp
 
-                          toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
+                          toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
                        in case selectedCardKind of
                             CWild (WildCard {kind}) ->
                               [ Model $
-                                  model' & ((#gameState . #wildcardKind) ?~ kind),
+                                  model' & ((#gameState % #wildcardKind) ?~ kind),
                                 Event $ AppChangeScene SPickWildCardColor
                               ]
                             CColored scc ->
@@ -408,13 +407,12 @@ handleEvent _ _ model evt =
               case wck of
                 Wild -> [Model $ model' & toNextTurn, Event $ AppChangeScene SPlay]
                 WildDraw4 ->
-                  -- TODO: Check why we can't simply use `hft` to link the lens in setter
                   [ Model $ handleSpecialDrawCards model' 4 & toNextTurn,
                     Event $ AppChangeScene SPlay
                   ]
           where
-            model' = model & ((#gameState . #wildcardColor) ?~ cc)
-            toNextTurn m = m & #gameState . #turn .~ nextTurn gs.turn
+            model' = model & ((#gameState % #wildcardColor) ?~ cc)
+            toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
         AppChangeScene scene ->
           let changeScene s = Model $ model & #currentScene .~ s
            in case scene of
@@ -427,7 +425,7 @@ handleEvent _ _ model evt =
 launchGUI :: IO ()
 launchGUI = do
   rng <- R.newStdGen
-  let model = initialModel & #gameState . #rng .~ rng
+  let model = initialModel & #gameState % #rng .~ rng
   startApp model handleEvent buildUI config
   where
     config =

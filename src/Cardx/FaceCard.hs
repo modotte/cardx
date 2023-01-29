@@ -1,6 +1,5 @@
 module Cardx.FaceCard (FaceCard (..)) where
 
-import Data.Generics.Labels ()
 import Relude
 
 data FaceCard = FaceCard

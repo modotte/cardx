@@ -1,6 +1,5 @@
 module Cardx.ActionKind (ActionKind (..)) where
 
-import Data.Generics.Labels ()
 import Relude
 import TextShow (TextShow, showt)
 

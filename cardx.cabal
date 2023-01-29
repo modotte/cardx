@@ -53,9 +53,8 @@ library
       base >=4.7 && <5
     , bytestring
     , data-default-class
-    , generic-lens
-    , lens
     , monomer
+    , optics
     , random
     , random-shuffle
     , relude
@@ -86,9 +85,8 @@ executable cardx-exe
     , bytestring
     , cardx
     , data-default-class
-    , generic-lens
-    , lens
     , monomer
+    , optics
     , random
     , random-shuffle
     , relude
@@ -120,10 +118,9 @@ test-suite cardx-test
     , bytestring
     , cardx
     , data-default-class
-    , generic-lens
     , hspec
-    , lens
     , monomer
+    , optics
     , random
     , random-shuffle
     , relude

@@ -1,7 +1,6 @@
 module Cardx.WildCard (WildCard (..)) where
 
 import Cardx.WildKind (WildKind (..))
-import Data.Generics.Labels ()
 import Relude
 
 data WildCard = WildCard

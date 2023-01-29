@@ -1,6 +1,5 @@
 module Cardx.WildKind (WildKind (..)) where
 
-import Data.Generics.Labels ()
 import Relude
 import TextShow (TextShow, showt)
 

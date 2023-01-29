@@ -1,7 +1,6 @@
 module Cardx.ActionCard (ActionCard (..)) where
 
 import Cardx.ActionKind (ActionKind (..))
-import Data.Generics.Labels ()
 import Relude
 
 data ActionCard = ActionCard

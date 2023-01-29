@@ -36,7 +36,6 @@ import Cardx.FaceCard (FaceCard (..))
 import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
 import Data.Default.Class (Default (def))
-import Data.Generics.Labels ()
 import Data.Vector (Vector)
 import Data.Vector qualified as V
 import Relude
