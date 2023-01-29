@@ -263,6 +263,16 @@ handleSpecialDrawCards model n =
 shuffleCards :: R.RandomGen gen => [a] -> gen -> [a]
 shuffleCards deck = RS.shuffle' deck (length deck)
 
+resetEmptyDeck :: R.RandomGen gen => gen -> [a] -> [a] -> ([a], [a])
+resetEmptyDeck rng drawPile [] =
+  case drawPile of
+    -- This shouldn't happen
+    [] -> ([], [])
+    (x : xs) ->
+      -- TODO: Check if we need to increment seed everytime.
+      ([x], shuffleCards xs rng)
+resetEmptyDeck _ drawPile deck = (drawPile, deck)
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -313,17 +323,7 @@ handleEvent _ _ model evt =
                 ( gs.deck,
                   model ^. #gameState . (handFromTurn gs.turn) . #hand
                 )
-            piles =
-              case d of
-                [] ->
-                  case gs.drawPile of
-                    -- This shouldn't happen
-                    [] -> ([], [])
-                    (x : xs) ->
-                      -- TODO: Check if we need to increment seed everytime.
-                      let sd = RS.shuffle' xs (length xs) gs.rng
-                       in ([x], sd)
-                _ -> (gs.drawPile, d)
+            piles = resetEmptyDeck gs.rng gs.drawPile d
         AppClickHandCard selectedCard@Card {id, kind = selectedCardKind} ->
           let pileTopCard =
                 case gs.drawPile of
