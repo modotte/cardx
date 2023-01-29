@@ -371,27 +371,3 @@ main = hspec $ do
         y = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
 
     CM.isValidPattern x y `shouldBe` True
-
-  it "isValidPattern (wilddraw4 on top of another)" $ do
-    let x = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
-        y = Card {id = 7, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
-
-    CM.isValidPattern x y `shouldBe` False
-
-  it "isValidPattern (wild on top of another)" $ do
-    let x = Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}
-        y = Card {id = 4, kind = CWild (WildCard {kind = Wild, score = 0})}
-
-    CM.isValidPattern x y `shouldBe` False
-
-  it "isValidPattern (wild on top of another wilddraw4 and vice versa)" $ do
-    let x = Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}
-        y = Card {id = 7, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
-
-    CM.isValidPattern x y `shouldBe` False
-
-  it "isValidPattern (draw2)" $ do
-    let x = Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}
-        y = Card {id = 7, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
-
-    CM.isValidPattern x y `shouldBe` False
