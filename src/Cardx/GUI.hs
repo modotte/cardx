@@ -86,9 +86,19 @@ specialCardStyle :: [StyleState]
 specialCardStyle = cardTextColor : [bgColor black]
 
 -- TODO: Show score on cards
-wcAsBtn :: Typeable e => WildCard -> e -> WidgetNode s e
-wcAsBtn (WildCard {kind, score}) evt =
-  button (TS.showt kind) evt `styleBasic` specialCardStyle
+wcAsBtn mwcc (WildCard {kind, score}) evt =
+  btn `styleBasic` style
+  where
+    style =
+      case mwcc of
+        Nothing -> specialCardStyle
+        Just wcc ->
+          case wcc of
+            RedCard _ -> cardTextColor : [bgColor red]
+            YellowCard _ -> cardTextColor : [bgColor yellow]
+            GreenCard _ -> cardTextColor : [bgColor green]
+            BlueCard _ -> cardTextColor : [bgColor blue]
+    btn = button (TS.showt kind) evt
 
 wcAsUnkBtn :: Typeable e => WildCard -> e -> WidgetNode s e
 wcAsUnkBtn (WildCard {}) evt =
@@ -117,10 +127,10 @@ ccAsUnkBtn cc evt = btn evt `styleBasic` specialCardStyle
   where
     btn = ckAsUnkBtn $ getColoredKind cc
 
-cardAsBtn :: Typeable e => Card -> e -> WidgetNode s e
-cardAsBtn Card {kind} =
+cardAsBtn :: Typeable p => Maybe ColoredCard -> Card -> p -> WidgetNode s p
+cardAsBtn wcc Card {kind} =
   case kind of
-    CWild x -> wcAsBtn x
+    CWild x -> wcAsBtn wcc x
     CColored x -> ccAsBtn x
 
 cardAsUnkBtn :: Typeable e => Card -> e -> WidgetNode s e
@@ -138,7 +148,7 @@ gameBoard model =
           ( \x ->
               if gs.turn == TPlayer
                 then cardAsUnkBtn x AppIgnore
-                else cardAsBtn x $ AppClickHandCard x
+                else cardAsBtn Nothing x $ AppClickHandCard x
           )
             <$> V.toList gs.computer.hand,
         spacer,
@@ -153,7 +163,7 @@ gameBoard model =
             spacer,
             case gs.drawPile of
               [] -> label "Empty draw pile!"
-              (x : _) -> hstack [cardAsBtn x AppIgnore]
+              (x : _) -> hstack [cardAsBtn gs.wildcardColor x AppIgnore]
           ],
         spacer,
         separatorLine,
@@ -162,7 +172,7 @@ gameBoard model =
           ( \x ->
               if gs.turn == TComputer
                 then cardAsUnkBtn x AppIgnore
-                else cardAsBtn x $ AppClickHandCard x
+                else cardAsBtn Nothing x $ AppClickHandCard x
           )
             <$> V.toList gs.player.hand,
         spacer,
