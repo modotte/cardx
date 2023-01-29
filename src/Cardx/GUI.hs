@@ -18,6 +18,7 @@ import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
 import Relude hiding (id, (&))
+import System.Random (StdGen)
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
@@ -85,6 +86,9 @@ cardTextColor = textColor white
 
 specialCardStyle :: [StyleState]
 specialCardStyle = cardTextColor : [bgColor black]
+
+choice :: R.RandomGen b => b -> [a] -> Maybe a
+choice rng xs = xs !!? fst (R.randomR (0, length xs) rng)
 
 -- TODO: Show score on cards
 wcAsBtn mwcc (WildCard {kind, score}) evt =
@@ -255,6 +259,9 @@ handleSpecialDrawCards model n =
     hft = handFromTurn $ nextTurn gs.turn
     (d, h) = unsafeF n (gs.deck, model ^. #gameState . hft . #hand)
 
+shuffleCards :: R.RandomGen gen => [a] -> gen -> [a]
+shuffleCards deck = RS.shuffle' deck (length deck)
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -274,11 +281,8 @@ handleEvent _ _ model evt =
             Event AppDealCards
           ]
           where
-            -- TODO: Make sure to shuffle deck pre-and-post dealing, which in turn
-            -- will randomize the dealer and hands.
-
             n = 1
-            (d, ph) = unsafeF n (gs.deck, V.empty)
+            (d, ph) = unsafeF n (shuffleCards gs.deck gs.rng, V.empty)
             (_, ch) = unsafeF n (d, V.empty)
             dealer = pickDealer (ph ! 0) (ch ! 0)
         AppDealCards ->
@@ -291,8 +295,7 @@ handleEvent _ _ model evt =
           ]
           where
             n = 7
-            sd = RS.shuffle' gs.deck (length gs.deck) gs.rng
-            (d, ph) = unsafeF n (sd, V.empty)
+            (d, ph) = unsafeF n (shuffleCards gs.deck gs.rng, V.empty)
             (d', ch) = unsafeF n (d, V.empty)
             (d'', tc) = unsafeF 1 (d', V.empty)
         AppClickDeckCard ->
