@@ -12,7 +12,6 @@ import Cardx.WildKind (WildKind (..))
 import Control.Lens
 import Data.Default.Class qualified as D
 import Data.Generics.Labels ()
-import Data.Generics.Product.Fields qualified as GLF
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Vector (Vector, (!))
