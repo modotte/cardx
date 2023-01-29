@@ -16,8 +16,7 @@ import Data.Vector (Vector, (!))
 import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
-import Optics
-import Optics.Operators
+import Optics ((%), (&), (.~), (?~), (^.))
 import Relude hiding (id, (&))
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
@@ -151,9 +150,9 @@ gameBoard ::
     HasField "player" r3 r2,
     HasField "turn" r3 Turn,
     HasField "wildcardColor" r3 (Maybe ColoredCard),
-    HasField "gameState" r4 r3
+    HasField "gameState" p r3
   ) =>
-  r4 ->
+  p ->
   WidgetNode s AppEvent
 gameBoard model =
   scroll $

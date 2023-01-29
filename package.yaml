@@ -37,6 +37,7 @@ dependencies:
   - text
   - bytestring
   - optics
+  - optics-core
   - monomer
   - text-show
   - random

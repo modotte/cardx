@@ -55,6 +55,7 @@ library
     , data-default-class
     , monomer
     , optics
+    , optics-core
     , random
     , random-shuffle
     , relude
@@ -87,6 +88,7 @@ executable cardx-exe
     , data-default-class
     , monomer
     , optics
+    , optics-core
     , random
     , random-shuffle
     , relude
@@ -121,6 +123,7 @@ test-suite cardx-test
     , hspec
     , monomer
     , optics
+    , optics-core
     , random
     , random-shuffle
     , relude
