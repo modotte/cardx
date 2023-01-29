@@ -299,10 +299,27 @@ handleEvent _ _ model evt =
           [ Model $
               model
                 & #gameState . (handFromTurn gs.turn) . #hand .~ h
-                & #gameState . #deck .~ d
+                & #gameState . #drawPile .~ fst d'
+                & #gameState . #deck .~ snd d'
           ]
           where
-            (d, h) = unsafeF 1 (gs.deck, model ^. #gameState . (handFromTurn gs.turn) . #hand)
+            (d, h) =
+              unsafeF
+                1
+                ( gs.deck,
+                  model ^. #gameState . (handFromTurn gs.turn) . #hand
+                )
+            d' =
+              case d of
+                [] ->
+                  case gs.drawPile of
+                    -- This shouldn't happen
+                    [] -> ([], [])
+                    (x : xs) ->
+                      -- TODO: Check if we need to increment seed everytime.
+                      let sd = RS.shuffle' xs (length xs) gs.rng
+                       in ([x], sd)
+                _ -> (gs.drawPile, d)
         AppClickHandCard selectedCard@Card {id, kind = selectedCardKind} ->
           let pileTopCard =
                 case gs.drawPile of
@@ -323,8 +340,6 @@ handleEvent _ _ model evt =
                             case gs.wildcardColor of
                               Nothing -> Just model'
                               Just wcc ->
-                                -- TODO: Decide if want to allow non-face card stacking.
-                                -- Also, I think we should discard WildDraw4 penalties for this game.
                                 if eqColor scc wcc
                                   then
                                     model'
