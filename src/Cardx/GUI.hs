@@ -299,8 +299,8 @@ handleEvent _ _ model evt =
           [ Model $
               model
                 & #gameState . (handFromTurn gs.turn) . #hand .~ h
-                & #gameState . #drawPile .~ fst d'
-                & #gameState . #deck .~ snd d'
+                & #gameState . #drawPile .~ fst piles
+                & #gameState . #deck .~ snd piles
           ]
           where
             (d, h) =
@@ -309,7 +309,7 @@ handleEvent _ _ model evt =
                 ( gs.deck,
                   model ^. #gameState . (handFromTurn gs.turn) . #hand
                 )
-            d' =
+            piles =
               case d of
                 [] ->
                   case gs.drawPile of
