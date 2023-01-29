@@ -208,16 +208,17 @@ pickWildCardColorScene ::
   WidgetNode s AppEvent
 pickWildCardColorScene model =
   vstack
-    [ label $ "Pick " <> kindText <> " color.",
+    [ label $ "Pick " <> kt <> " color:",
       spacer,
-      button "" (AppPickWildCardColor $ RedCard defCK) `styleBasic` [bgColor red],
-      button "" (AppPickWildCardColor $ YellowCard defCK) `styleBasic` [bgColor yellow],
-      button "" (AppPickWildCardColor $ GreenCard defCK) `styleBasic` [bgColor green],
-      button "" (AppPickWildCardColor $ BlueCard defCK) `styleBasic` [bgColor blue]
+      btn (AppPickWildCardColor $ RedCard ck) `styleBasic` [bgColor red],
+      btn (AppPickWildCardColor $ YellowCard ck) `styleBasic` [bgColor yellow],
+      btn (AppPickWildCardColor $ GreenCard ck) `styleBasic` [bgColor green],
+      btn (AppPickWildCardColor $ BlueCard ck) `styleBasic` [bgColor blue]
     ]
   where
-    kindText = maybe "" TS.showt $ model.gameState.wildcardKind
-    defCK = CKFaceCard $ FaceCard {kind = 0, score = 1}
+    kt = maybe "" TS.showt $ model.gameState.wildcardKind
+    ck = CKFaceCard $ FaceCard {kind = 0, score = 1}
+    btn = button ""
 
 handFromTurn :: (IsLabel "computer" a, IsLabel "player" a) => Turn -> a
 handFromTurn TPlayer = #player
