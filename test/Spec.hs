@@ -4,6 +4,7 @@ import Cardx.Constant qualified as CC
 import Cardx.FaceCard (FaceCard (..))
 import Cardx.Model (Card (..), CardKind (..), ColoredCard (..), ColoredKind (..), Dealer (..), Turn (..))
 import Cardx.Model qualified as CM
+import Cardx.Util qualified as CU
 import Cardx.WildCard (WildCard (..))
 import Cardx.WildKind (WildKind (..))
 import Data.Vector qualified as V
@@ -12,7 +13,7 @@ import Test.Hspec (describe, hspec, it, shouldBe)
 
 main :: IO ()
 main = hspec $ do
-  describe "Model.hs" $ do
+  describe "src/Cardx/Model.hs" $ do
     it "makeWilds" $ do
       CM.makeWilds Wild
         `shouldBe` V.fromList
@@ -272,102 +273,115 @@ main = hspec $ do
                      Card {id = 107, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 9, score = 9})))}
                    ]
 
-  it "getColoredKind" $ do
-    CM.getColoredKind (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))
-      `shouldBe` CKFaceCard (FaceCard {kind = 6, score = 6})
+    it "getColoredKind" $ do
+      CM.getColoredKind (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))
+        `shouldBe` CKFaceCard (FaceCard {kind = 6, score = 6})
 
-  it "coloredScore" $ do
-    CM.coloredScore (RedCard (CKFaceCard (FaceCard {kind = 1, score = 2939}))) `shouldBe` 2939
+    it "coloredScore" $ do
+      CM.coloredScore (RedCard (CKFaceCard (FaceCard {kind = 1, score = 2939}))) `shouldBe` 2939
 
-  it "cardScore (WildCard)" $ do
-    CM.cardScore (Card {id = 0, kind = CWild (WildCard {kind = WildDraw4, score = 20})}) `shouldBe` 20
+    it "cardScore (WildCard)" $ do
+      CM.cardScore (Card {id = 0, kind = CWild (WildCard {kind = WildDraw4, score = 20})}) `shouldBe` 20
 
-  it "cardScore (ColoredCard)" $ do
-    CM.cardScore (Card {id = 0, kind = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))}) `shouldBe` 85
+    it "cardScore (ColoredCard)" $ do
+      CM.cardScore (Card {id = 0, kind = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))}) `shouldBe` 85
 
-  it "pickDealer" $ do
-    let pc = Card {id = 0, kind = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))}
-        cc = Card {id = 0, kind = CWild (WildCard {kind = WildDraw4, score = 102})}
-    CM.pickDealer pc cc `shouldBe` DComputer
+    it "pickDealer" $ do
+      let pc = Card {id = 0, kind = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))}
+          cc = Card {id = 0, kind = CWild (WildCard {kind = WildDraw4, score = 102})}
+      CM.pickDealer pc cc `shouldBe` DComputer
 
-  it "nextTurn" $ do
-    CM.nextTurn TComputer `shouldBe` TPlayer
+    it "nextTurn" $ do
+      CM.nextTurn TComputer `shouldBe` TPlayer
 
-  it "firstTurn" $ do
-    CM.firstTurn DComputer `shouldBe` TPlayer
+    it "firstTurn" $ do
+      CM.firstTurn DComputer `shouldBe` TPlayer
 
-  it "drawNFromDeck 1" $ do
-    let from = [Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 1, kind = CWild (WildCard WildDraw4 0)}]
-        to = V.empty
-        f = execState (sequence $ CM.drawNFromDeck 1) $ Just (from, to)
+    it "drawNFromDeck 1" $ do
+      let from = [Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 1, kind = CWild (WildCard WildDraw4 0)}]
+          to = V.empty
+          f = execState (sequence $ CM.drawNFromDeck 1) $ Just (from, to)
 
-    f
-      `shouldBe` Just
-        ( [Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}, Card {id = 1, kind = CWild (WildCard {kind = WildDraw4, score = 0})}],
-          V.fromList [Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}]
-        )
-  it "drawNFromDeck 3" $ do
-    let from = [Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 1, kind = CWild (WildCard WildDraw4 0)}]
-        to = V.empty
-        f = execState (sequence $ CM.drawNFromDeck 3) $ Just (from, to)
+      f
+        `shouldBe` Just
+          ( [Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}, Card {id = 1, kind = CWild (WildCard {kind = WildDraw4, score = 0})}],
+            V.fromList [Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}]
+          )
+    it "drawNFromDeck 3" $ do
+      let from = [Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 1, kind = CWild (WildCard WildDraw4 0)}]
+          to = V.empty
+          f = execState (sequence $ CM.drawNFromDeck 3) $ Just (from, to)
 
-    f
-      `shouldBe` Just
-        ( [],
-          V.fromList [Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}, Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}, Card {id = 1, kind = CWild (WildCard {kind = WildDraw4, score = 0})}]
-        )
+      f
+        `shouldBe` Just
+          ( [],
+            V.fromList [Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}, Card {id = 0, kind = CWild (WildCard {kind = Wild, score = 0})}, Card {id = 1, kind = CWild (WildCard {kind = WildDraw4, score = 0})}]
+          )
 
-  it "drawNFromDeck 10" $ do
-    let from = [Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 1, kind = CWild (WildCard WildDraw4 0)}]
-        to = V.empty
-        f = execState (sequence $ CM.drawNFromDeck 10) $ Just (from, to)
+    it "drawNFromDeck 10" $ do
+      let from = [Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 1, kind = CWild (WildCard WildDraw4 0)}]
+          to = V.empty
+          f = execState (sequence $ CM.drawNFromDeck 10) $ Just (from, to)
 
-    f `shouldBe` Nothing
+      f `shouldBe` Nothing
 
-  it "eqColor (same kind)" $ do
-    let x = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
-        y = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 20}))
+    it "eqColor (same kind)" $ do
+      let x = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+          y = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 20}))
 
-    CM.eqColor x y `shouldBe` True
+      CM.eqColor x y `shouldBe` True
 
-  it "eqColor (different kind)" $ do
-    let x = RedCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
-        y = RedCard (CKFaceCard (FaceCard {kind = 8, score = 20}))
+    it "eqColor (different kind)" $ do
+      let x = RedCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+          y = RedCard (CKFaceCard (FaceCard {kind = 8, score = 20}))
 
-    CM.eqColor x y `shouldBe` True
+      CM.eqColor x y `shouldBe` True
 
-  it "isEqualColoredKind 1" $ do
-    let x = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
-        y = RedCard (CKFaceCard (FaceCard {kind = 8, score = 20}))
+    it "isEqualColoredKind 1" $ do
+      let x = BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+          y = RedCard (CKFaceCard (FaceCard {kind = 8, score = 20}))
 
-    CM.isEqualColoredKind x y `shouldBe` False
+      CM.isEqualColoredKind x y `shouldBe` False
 
-  it "isEqualColoredKind 2" $ do
-    let x = YellowCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
-        y = YellowCard (CKActionCard (ActionCard {kind = Draw2, score = 20}))
+    it "isEqualColoredKind 2" $ do
+      let x = YellowCard (CKActionCard (ActionCard {kind = Skip, score = 85}))
+          y = YellowCard (CKActionCard (ActionCard {kind = Draw2, score = 20}))
 
-    CM.isEqualColoredKind x y `shouldBe` False
+      CM.isEqualColoredKind x y `shouldBe` False
 
-  it "isEqualColoredKind 3" $ do
-    let x = GreenCard (CKFaceCard (FaceCard {kind = 4, score = 85}))
-        y = YellowCard (CKFaceCard (FaceCard {kind = 4, score = 20}))
+    it "isEqualColoredKind 3" $ do
+      let x = GreenCard (CKFaceCard (FaceCard {kind = 4, score = 85}))
+          y = YellowCard (CKFaceCard (FaceCard {kind = 4, score = 20}))
 
-    CM.isEqualColoredKind x y `shouldBe` True
+      CM.isEqualColoredKind x y `shouldBe` True
 
-  it "isEqualColoredKind 4" $ do
-    let x = RedCard (CKActionCard (ActionCard {kind = Draw2, score = 32}))
-        y = YellowCard (CKActionCard (ActionCard {kind = Draw2, score = 20}))
+    it "isEqualColoredKind 4" $ do
+      let x = RedCard (CKActionCard (ActionCard {kind = Draw2, score = 32}))
+          y = YellowCard (CKActionCard (ActionCard {kind = Draw2, score = 20}))
 
-    CM.isEqualColoredKind x y `shouldBe` True
+      CM.isEqualColoredKind x y `shouldBe` True
 
-  it "isValidPattern (unmatching color and colorkind)" $ do
-    let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
-        y = Card {id = 56, kind = CColored (RedCard (CKFaceCard (FaceCard {kind = 2, score = 6})))}
+    it "isValidPattern (unmatching color and colorkind)" $ do
+      let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
+          y = Card {id = 56, kind = CColored (RedCard (CKFaceCard (FaceCard {kind = 2, score = 6})))}
 
-    CM.isValidPattern x y `shouldBe` False
+      CM.isValidPattern x y `shouldBe` False
 
-  it "isValidPattern (colored and wildcard)" $ do
-    let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
-        y = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
+    it "isValidPattern (colored and wildcard)" $ do
+      let x = Card {id = 56, kind = CColored (BlueCard (CKFaceCard (FaceCard {kind = 6, score = 6})))}
+          y = Card {id = 6, kind = CWild (WildCard {kind = WildDraw4, score = 50})}
 
-    CM.isValidPattern x y `shouldBe` True
+      CM.isValidPattern x y `shouldBe` True
+
+  describe "src/Cardx/Util.hs" $ do
+    it "maybeHead [1,2,3]" $ do
+      CU.maybeHead [1, 2, 3] `shouldBe` Just 1
+
+    it "maybeHead []" $ do
+      CU.maybeHead ([] :: [Int]) `shouldBe` Nothing
+
+    it "defaultIfEmpty 0 [1,2,3]" $ do
+      CU.defaultIfEmpty 0 [1, 2, 3] `shouldBe` 1
+
+    it "defaultIfEmpty 0 []" $ do
+      CU.defaultIfEmpty 0 [] `shouldBe` 0

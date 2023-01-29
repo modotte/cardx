@@ -31,6 +31,7 @@ library
       Cardx.FaceCard
       Cardx.GUI
       Cardx.Model
+      Cardx.Util
       Cardx.WildCard
       Cardx.WildKind
   other-modules:

@@ -7,6 +7,7 @@ module Cardx.GUI (launchGUI) where
 import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.Model
+import Cardx.Util qualified as CU
 import Cardx.WildKind (WildKind (..))
 import Control.Lens
 import Data.Default.Class qualified as D
@@ -325,10 +326,7 @@ handleEvent _ _ model evt =
                 )
             piles = resetEmptyDeck gs.rng gs.drawPile d
         AppClickHandCard selectedCard@Card {id, kind = selectedCardKind} ->
-          let pileTopCard =
-                case gs.drawPile of
-                  [] -> selectedCard
-                  (x : _) -> x
+          let pileTopCard = CU.defaultIfEmpty selectedCard gs.drawPile
            in ( if isValidPattern selectedCard pileTopCard
                   then
                     ( let nh = V.filter (\c -> c.id /= id) $ model ^. #gameState . (handFromTurn gs.turn) . #hand
