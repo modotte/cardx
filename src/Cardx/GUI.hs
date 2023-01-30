@@ -32,8 +32,7 @@ data AppModel = AppModel
   deriving (Show, Eq, Generic)
 
 data Scene
-  = SMenu
-  | SPickDealer
+  = SPickDealer
   | SPlay
   | SPickWildCardColor
   | SEnd
@@ -41,6 +40,7 @@ data Scene
 
 data AppEvent
   = AppIgnore
+  | AppQuitGame
   | AppPickDealer
   | AppDealCards
   | AppClickDeckCard
@@ -60,7 +60,7 @@ endScene :: WidgetNode s AppEvent
 endScene =
   vstack
     [ label "You've TODO!!!",
-      button "Go back to menu" (AppChangeScene SMenu),
+      button "Quit?" AppQuitGame,
       button "Or start over?" AppResetRound
     ]
 
@@ -263,7 +263,6 @@ buildUI _ model = widgetTree
     widgetTree =
       vstack
         [ case model.currentScene of
-            SMenu -> menuScene
             SPickDealer -> pickDealerScene model
             SPlay -> playScene model
             SPickWildCardColor -> pickWildCardColorScene model
@@ -272,7 +271,7 @@ buildUI _ model = widgetTree
         `styleBasic` [padding 10]
 
 initialModel :: AppModel
-initialModel = AppModel D.def SMenu False $ R.mkStdGen 0
+initialModel = AppModel D.def SPickDealer False $ R.mkStdGen 0
 
 unsafeF :: Natural -> ([Card], Vector Card) -> ([Card], Vector Card)
 unsafeF n x =
@@ -325,6 +324,7 @@ handleEvent _ _ model evt =
   let gs = model.gameState
    in case evt of
         AppIgnore -> []
+        AppQuitGame -> [Request $ ExitApplication True]
         AppPickDealer ->
           [ Model $
               model
@@ -428,7 +428,6 @@ handleEvent _ _ model evt =
         AppChangeScene scene ->
           let changeScene s = Model $ model & #currentScene .~ s
            in case scene of
-                SMenu -> [changeScene SMenu]
                 SPickDealer -> [changeScene SPickDealer]
                 SPlay -> [changeScene SPlay]
                 SPickWildCardColor -> [changeScene SPickWildCardColor]
