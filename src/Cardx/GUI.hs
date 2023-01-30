@@ -18,6 +18,7 @@ import GHC.Records (HasField)
 import Monomer
 import Optics ((%), (&), (.~), (?~), (^.))
 import Relude hiding (id, (&))
+import System.Random (StdGen)
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
@@ -25,7 +26,8 @@ import TextShow qualified as TS
 data AppModel = AppModel
   { gameState :: GameState,
     currentScene :: Scene,
-    hasPickedDealer :: Bool
+    hasPickedDealer :: Bool,
+    oldRng :: StdGen
   }
   deriving (Show, Eq, Generic)
 
@@ -269,7 +271,7 @@ buildUI _ model = widgetTree
         `styleBasic` [padding 10]
 
 initialModel :: AppModel
-initialModel = AppModel D.def SMenu False
+initialModel = AppModel D.def SMenu False $ R.mkStdGen 0
 
 unsafeF :: Natural -> ([Card], Vector Card) -> ([Card], Vector Card)
 unsafeF n x =
@@ -328,12 +330,15 @@ handleEvent _ _ model evt =
               model
                 & #hasPickedDealer .~ True
                 & #gameState % #dealer .~ dealer
-                & #gameState % #turn .~ firstTurn dealer,
+                & #gameState % #turn .~ firstTurn dealer
+                & #gameState % #rng .~ old
+                & #oldRng .~ new,
             Event AppDealCards
           ]
           where
             n = 1
-            (d, ph) = unsafeF n (shuffleCards gs.deck gs.rng, V.empty)
+            (old, new) = R.split model.oldRng
+            (d, ph) = unsafeF n (shuffleCards gs.deck old, V.empty)
             (_, ch) = unsafeF n (d, V.empty)
             dealer = pickDealer (ph ! 0) (ch ! 0)
         AppDealCards ->
@@ -428,7 +433,7 @@ handleEvent _ _ model evt =
 launchGUI :: IO ()
 launchGUI = do
   rng <- R.newStdGen
-  let model = initialModel & #gameState % #rng .~ rng
+  let model = initialModel & #gameState % #rng .~ rng & #oldRng .~ rng
   startApp model handleEvent buildUI config
   where
     config =
