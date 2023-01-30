@@ -337,6 +337,8 @@ handleEvent _ _ model evt =
             (_, ch) = unsafeF n (d, V.empty)
             dealer = pickDealer (ph ! 0) (ch ! 0)
         AppDealCards ->
+          -- TODO: If top card is wildcard, decide a random color for it or let
+          -- whoever in next turn choose.
           [ Model $
               model
                 & #gameState % #player % #hand .~ ph
@@ -373,29 +375,31 @@ handleEvent _ _ model evt =
                           ndp = selectedCard : gs.drawPile
                           model' =
                             model
-                              & #gameState % (handFromTurn gs.turn) % #hand .~ nh
+                              & #gameState % handFromTurn gs.turn % #hand .~ nh
                               & #gameState % #drawPile .~ ndp
 
                           toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
-                       in case selectedCardKind of
-                            CWild (WildCard {kind}) ->
-                              [ Model $
-                                  model' & ((#gameState % #wildcardKind) ?~ kind),
-                                Event $ AppChangeScene SPickWildCardColor
-                              ]
-                            CColored scc ->
-                              case getColoredKind scc of
-                                CKFaceCard _ ->
-                                  maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildCardInfo model' scc
-                                CKActionCard (ActionCard {kind}) ->
-                                  case kind of
-                                    Skip ->
-                                      maybe [] (\x -> [Model x]) $ updatedWildCardInfo model' scc
-                                    Draw2 ->
-                                      maybe
-                                        []
-                                        (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
-                                        $ updatedWildCardInfo model' scc
+                       in if V.null $ model' ^. #gameState % handFromTurn gs.turn % #hand
+                            then [Event $ AppChangeScene SEnd]
+                            else case selectedCardKind of
+                              CWild (WildCard {kind}) ->
+                                [ Model $
+                                    model' & ((#gameState % #wildcardKind) ?~ kind),
+                                  Event $ AppChangeScene SPickWildCardColor
+                                ]
+                              CColored scc ->
+                                case getColoredKind scc of
+                                  CKFaceCard _ ->
+                                    maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildCardInfo model' scc
+                                  CKActionCard (ActionCard {kind}) ->
+                                    case kind of
+                                      Skip ->
+                                        maybe [] (\x -> [Model x]) $ updatedWildCardInfo model' scc
+                                      Draw2 ->
+                                        maybe
+                                          []
+                                          (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
+                                          $ updatedWildCardInfo model' scc
                     )
                   else []
               )
