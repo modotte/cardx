@@ -69,8 +69,8 @@ endScene ::
 endScene model =
   vstack
     [ label $ "To win the game score: " <> TS.showt CC.maxScore,
-      label $ "Player 1 score: " <> TS.showt model.gameState.player1.score,
-      label $ "Player 2 score: " <> TS.showt model.gameState.player2.score,
+      label $ "<Player 1> score: " <> TS.showt model.gameState.player1.score,
+      label $ "<Player 2> score: " <> TS.showt model.gameState.player2.score,
       label $ "Congratulations " <> TS.showt model.gameState.turn <> "!",
       label $ "You've " <> TS.showt model.gameState.progression,
       button "Quit?" AppQuitGame,

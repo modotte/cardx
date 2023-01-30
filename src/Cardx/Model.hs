@@ -63,8 +63,8 @@ data Dealer = DPlayer1 | DPlayer2 deriving (Show, Eq, Generic)
 data Turn = TPLayer1 | TPlayer2 deriving (Show, Eq, Generic)
 
 instance TextShow Turn where
-  showt TPLayer1 = "Player 1"
-  showt TPlayer2 = "Player 2"
+  showt TPLayer1 = "<Player 1>"
+  showt TPlayer2 = "<Player 2>"
 
 data ColoredKind
   = CKActionCard ActionCard
