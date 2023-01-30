@@ -398,7 +398,7 @@ handleEvent _ _ model evt =
                             then
                               let sm = sumRoundWinnerScore model'
                                in [ Model $
-                                      model
+                                      model'
                                         & #gameState % #progression
                                           .~ ( if sm >= CC.maxScore
                                                  then GPWin
