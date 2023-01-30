@@ -353,7 +353,7 @@ handleEvent _ _ model evt =
             (_, ch) = unsafeF n (d, V.empty)
             dealer = pickDealer (ph ! 0) (ch ! 0)
         AppDealCards ->
-          case tcCK topCard of
+          case f topCard of
             CWild (WildCard {kind}) ->
               [ Model $
                   model' & ((#gameState % #wildcardKind) ?~ kind),
@@ -366,7 +366,7 @@ handleEvent _ _ model evt =
             (d', ch) = unsafeF n (d, V.empty)
             (d'', tc) = unsafeF 1 (d', V.empty)
             topCard = tc ! 0
-            tcCK Card {kind} = kind
+            f Card {kind} = kind
             model' =
               model
                 & #gameState % #player1 % #hand .~ ph
