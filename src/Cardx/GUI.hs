@@ -15,6 +15,9 @@ import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
 import Optics ((%), (&), (.~), (?~), (^.))
+import Optics.Internal.Optic.Subtyping qualified
+import Optics.Internal.Optic.Types qualified
+import Optics.Label qualified
 import Relude hiding (id, (&))
 import System.Random (StdGen)
 import System.Random qualified as R
@@ -51,15 +54,24 @@ data AppEvent
 endScene ::
   ( TS.TextShow a1,
     TS.TextShow a2,
-    HasField "progression" r1 a1,
-    HasField "turn" r1 a2,
-    HasField "gameState" r2 r1
+    TS.TextShow a3,
+    TS.TextShow a4,
+    HasField "score" r1 a2,
+    HasField "score" r2 a3,
+    HasField "player1" r3 r2,
+    HasField "player2" r3 r1,
+    HasField "progression" r3 a1,
+    HasField "turn" r3 a4,
+    HasField "gameState" r4 r3
   ) =>
-  r2 ->
+  r4 ->
   WidgetNode s AppEvent
 endScene model =
   vstack
-    [ label $ "Congratulations " <> TS.showt model.gameState.turn <> "!",
+    [ label $ "To win the game score: " <> TS.showt CC.maxScore,
+      label $ "Player 1 score: " <> TS.showt model.gameState.player1.score,
+      label $ "Player 2 score: " <> TS.showt model.gameState.player2.score,
+      label $ "Congratulations " <> TS.showt model.gameState.turn <> "!",
       label $ "You've " <> TS.showt model.gameState.progression,
       button "Quit?" AppQuitGame,
       button "Or continue on until someone wins the whole game?" AppResetRound
@@ -145,19 +157,6 @@ cardAsUnkBtn Card {kind} =
     CWild x -> wcAsUnkBtn x
     CColored x -> ccAsUnkBtn x
 
-gameBoard ::
-  ( HasField "hand" r1 (Vector Card),
-    HasField "hand" r2 (Vector Card),
-    HasField "player2" r3 r1,
-    HasField "deck" r3 [Card],
-    HasField "drawPile" r3 [Card],
-    HasField "player1" r3 r2,
-    HasField "turn" r3 Turn,
-    HasField "wildcardColor" r3 (Maybe ColoredCard),
-    HasField "gameState" p r3
-  ) =>
-  p ->
-  WidgetNode s AppEvent
 gameBoard model =
   scroll $
     vstack
@@ -201,29 +200,9 @@ gameBoard model =
   where
     gs = model.gameState
 
-playScene ::
-  ( TS.TextShow a1,
-    TS.TextShow a2,
-    HasField "score" r1 a1,
-    HasField "score" r2 a2,
-    HasField "hand" r1 (Vector Card),
-    HasField "hand" r2 (Vector Card),
-    HasField "player2" r3 r1,
-    HasField "deck" r3 [Card],
-    HasField "drawPile" r3 [Card],
-    HasField "player1" r3 r2,
-    HasField "turn" r3 Turn,
-    HasField "wildcardColor" r3 (Maybe ColoredCard),
-    HasField "gameState" r4 r3
-  ) =>
-  r4 ->
-  WidgetNode s AppEvent
 playScene model =
   vstack
-    [ label $ "Win score: " <> TS.showt CC.maxScore,
-      label $ "Player 1 score: " <> TS.showt gs.player1.score,
-      label $ "Player 2 score: " <> TS.showt gs.player2.score,
-      label $ "Next turn: " <> (TS.showt . nextTurn) gs.turn,
+    [ label $ "Next turn: " <> (TS.showt . nextTurn) gs.turn,
       spacer,
       gameBoard model
     ]
@@ -315,6 +294,34 @@ updatedWildCardInfo model scc =
   where
     mwcc = model.gameState.wildcardColor
 
+sumRoundWinnerScore ::
+  ( Optics.Label.LabelOptic "player1" l1 u1 v1 u2 v2,
+    Optics.Label.LabelOptic "player2" l1 u1 v1 u2 v2,
+    HasField "turn" r Turn,
+    HasField "gameState" p r,
+    Optics.Internal.Optic.Subtyping.Is
+      k1
+      Optics.Internal.Optic.Types.A_Getter,
+    Optics.Internal.Optic.Subtyping.JoinKinds k2 l2 k1,
+    Optics.Internal.Optic.Subtyping.JoinKinds k3 l1 k2,
+    Optics.Label.LabelOptic
+      "hand"
+      l2
+      u2
+      v2
+      (Vector Card)
+      (Vector Card),
+    Optics.Label.LabelOptic "gameState" k3 p p u1 v1
+  ) =>
+  p ->
+  Natural
+sumRoundWinnerScore model =
+  s
+  where
+    other = handFromTurn $ nextTurn model.gameState.turn
+    wh = model ^. #gameState % other % #hand
+    s = V.foldl' (\a b -> cardScore b + a) 0 wh
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -379,14 +386,24 @@ handleEvent _ _ model evt =
                     ( let nh = V.filter (\c -> c.id /= id) $ model ^. #gameState % handFromTurn gs.turn % #hand
                           -- This cannot fail (player selection), so we default to the same card
                           ndp = selectedCard : gs.drawPile
+                          hft model = handFromTurn $ model ^. #gameState % #turn
                           model' =
                             model
-                              & #gameState % handFromTurn gs.turn % #hand .~ nh
+                              & #gameState % hft model % #hand .~ nh
                               & #gameState % #drawPile .~ ndp
 
                           toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
-                       in if V.null $ model' ^. #gameState % handFromTurn gs.turn % #hand
-                            then [Model $ model & #gameState % #progression .~ GPRound RPWin, Event $ AppChangeScene SEndRound]
+                       in if V.null $ model' ^. #gameState % hft model' % #hand
+                            then
+                              [ Model $
+                                  model
+                                    & #gameState % #progression .~ GPRound RPWin
+                                    & #gameState
+                                      % hft model'
+                                      % #score
+                                      .~ sumRoundWinnerScore model,
+                                Event $ AppChangeScene SEndRound
+                              ]
                             else case selectedCardKind of
                               CWild (WildCard {kind}) ->
                                 [ Model $
