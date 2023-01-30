@@ -353,20 +353,26 @@ handleEvent _ _ model evt =
             (_, ch) = unsafeF n (d, V.empty)
             dealer = pickDealer (ph ! 0) (ch ! 0)
         AppDealCards ->
-          -- TODO: If top card is wildcard, decide a random color for it or let
-          -- whoever in next turn choose.
-          [ Model $
-              model
-                & #gameState % #player1 % #hand .~ ph
-                & #gameState % #player2 % #hand .~ ch
-                & #gameState % #deck .~ d''
-                & #gameState % #drawPile .~ [tc ! 0]
-          ]
+          case tcCK topCard of
+            CWild (WildCard {kind}) ->
+              [ Model $
+                  model' & ((#gameState % #wildcardKind) ?~ kind),
+                Event $ AppChangeScene SPickWildCardColor
+              ]
+            CColored _ -> [Model model']
           where
             n = 7
             (d, ph) = unsafeF n (shuffleCards gs.deck gs.rng, V.empty)
             (d', ch) = unsafeF n (d, V.empty)
             (d'', tc) = unsafeF 1 (d', V.empty)
+            topCard = tc ! 0
+            tcCK Card {kind} = kind
+            model' =
+              model
+                & #gameState % #player1 % #hand .~ ph
+                & #gameState % #player2 % #hand .~ ch
+                & #gameState % #deck .~ d''
+                & #gameState % #drawPile .~ [topCard]
         AppClickDeckCard ->
           [ Model $
               model
