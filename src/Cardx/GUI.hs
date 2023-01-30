@@ -134,7 +134,7 @@ ccAsBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
 ccAsBtn (RedCard x) evt =
   ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor red])
 ccAsBtn (YellowCard x) evt =
-  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor yellow])
+  ckAsBtn x evt `styleBasic` (textColor black : [bgColor yellow])
 ccAsBtn (GreenCard x) evt =
   ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor green])
 ccAsBtn (BlueCard x) evt =
@@ -395,15 +395,17 @@ handleEvent _ _ model evt =
                           toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
                        in if V.null $ model' ^. #gameState % hft model' % #hand
                             then
-                              [ Model $
-                                  model
-                                    & #gameState % #progression .~ GPRound RPWin
-                                    & #gameState
-                                      % hft model'
-                                      % #score
-                                      .~ sumRoundWinnerScore model,
-                                Event $ AppChangeScene SEndRound
-                              ]
+                              let sm = sumRoundWinnerScore model'
+                               in [ Model $
+                                      model
+                                        & #gameState % #progression
+                                          .~ ( if sm >= CC.maxScore
+                                                 then GPWin
+                                                 else GPRound RPWin
+                                             )
+                                        & #gameState % hft model' % #score .~ sm,
+                                    Event $ AppChangeScene SEndRound
+                                  ]
                             else case selectedCardKind of
                               CWild (WildCard {kind}) ->
                                 [ Model $
