@@ -443,9 +443,17 @@ handleEvent _ _ model evt =
             model' = model & ((#gameState % #wildcardColor) ?~ cc)
             toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
         AppResetRound ->
-          [Model $ initialModel & #oldRng .~ g0, Event $ AppChangeScene SPickDealer]
+          [ Model $
+              initialModel
+                & #oldRng .~ oldRng
+                & #gameState % #player1 % #score .~ p1s
+                & #gameState % #player2 % #score .~ p2s,
+            Event $ AppChangeScene SPickDealer
+          ]
           where
-            g0 = model.oldRng
+            oldRng = model.oldRng
+            p1s = model.gameState.player1.score
+            p2s = model.gameState.player2.score
         AppChangeScene scene ->
           let changeScene s = Model $ model & #currentScene .~ s
            in case scene of
