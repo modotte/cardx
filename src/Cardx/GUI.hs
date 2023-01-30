@@ -55,13 +55,12 @@ endScene ::
   ( TS.TextShow a1,
     TS.TextShow a2,
     TS.TextShow a3,
-    TS.TextShow a4,
-    HasField "score" r1 a2,
-    HasField "score" r2 a3,
+    HasField "score" r1 a1,
+    HasField "score" r2 a2,
     HasField "player1" r3 r2,
     HasField "player2" r3 r1,
-    HasField "progression" r3 a1,
-    HasField "turn" r3 a4,
+    HasField "progression" r3 GameProgression,
+    HasField "turn" r3 a3,
     HasField "gameState" r4 r3
   ) =>
   r4 ->
@@ -74,7 +73,9 @@ endScene model =
       label $ "Congratulations " <> TS.showt model.gameState.turn <> "!",
       label $ "You've " <> TS.showt model.gameState.progression,
       button "Quit?" AppQuitGame,
-      button "Or continue on until someone wins the whole game?" AppResetRound
+      if model.gameState.progression /= GPWin
+        then button "Or continue on until someone wins the whole game?" AppResetRound
+        else vstack []
     ]
 
 pickDealerScene ::
@@ -386,7 +387,7 @@ handleEvent _ _ model evt =
                     ( let nh = V.filter (\c -> c.id /= id) $ model ^. #gameState % handFromTurn gs.turn % #hand
                           -- This cannot fail (player selection), so we default to the same card
                           ndp = selectedCard : gs.drawPile
-                          hft model = handFromTurn $ model ^. #gameState % #turn
+                          hft m = handFromTurn $ m ^. #gameState % #turn
                           model' =
                             model
                               & #gameState % hft model % #hand .~ nh
