@@ -289,13 +289,13 @@ main = hspec $ do
     it "pickDealer" $ do
       let pc = Card {id = 0, kind = CColored (BlueCard (CKActionCard (ActionCard {kind = Skip, score = 85})))}
           cc = Card {id = 0, kind = CWild (WildCard {kind = WildDraw4, score = 102})}
-      CM.pickDealer pc cc `shouldBe` DComputer
+      CM.pickDealer pc cc `shouldBe` DPlayer2
 
     it "nextTurn" $ do
-      CM.nextTurn TComputer `shouldBe` TPlayer
+      CM.nextTurn TPlayer2 `shouldBe` TPlayer1
 
     it "firstTurn" $ do
-      CM.firstTurn DComputer `shouldBe` TPlayer
+      CM.firstTurn DPlayer2 `shouldBe` TPlayer1
 
     it "drawNFromDeck 1" $ do
       let from = [Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 0, kind = CWild (WildCard Wild 0)}, Card {id = 1, kind = CWild (WildCard WildDraw4 0)}]

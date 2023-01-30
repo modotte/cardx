@@ -60,10 +60,10 @@ instance TextShow GameProgression where
 
 data Dealer = DPlayer1 | DPlayer2 deriving (Show, Eq, Generic)
 
-data Turn = TPLayer1 | TPlayer2 deriving (Show, Eq, Generic)
+data Turn = TPlayer1 | TPlayer2 deriving (Show, Eq, Generic)
 
 instance TextShow Turn where
-  showt TPLayer1 = "<Player 1>"
+  showt TPlayer1 = "<Player 1>"
   showt TPlayer2 = "<Player 2>"
 
 data ColoredKind
@@ -176,11 +176,11 @@ pickDealer :: Card -> Card -> Dealer
 pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer1 else DPlayer2
 
 nextTurn :: Turn -> Turn
-nextTurn TPlayer2 = TPLayer1
-nextTurn TPLayer1 = TPlayer2
+nextTurn TPlayer2 = TPlayer1
+nextTurn TPlayer1 = TPlayer2
 
 firstTurn :: Dealer -> Turn
-firstTurn DPlayer2 = TPLayer1
+firstTurn DPlayer2 = TPlayer1
 firstTurn DPlayer1 = TPlayer2
 
 type DeckToHand = Maybe ([Card], Vector Card)

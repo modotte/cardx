@@ -3,11 +3,3 @@
   for faster shuffling, but random-shuffle on list will do for now.
 - Decide if we want to duplicate a shuffled deck in case players took all
 the cards from deck.
-
-Custom rules:
-  - No need to signal `UNO` when the player left with one card.
-  - Standard penalties doesn't exist.
-  - Prohibit players to stack any cards except Skip card. (apparently official rule?)
-  - Player can pull any amount of card they want from deck until they found 
-  available matching card. 
-    - There's no pick one card from deck and move on action.

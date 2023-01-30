@@ -166,7 +166,7 @@ gameBoard model =
         spacer,
         hstack $
           ( \x ->
-              if gs.turn == TPLayer1
+              if gs.turn == TPlayer1
                 then cardAsUnkBtn x AppIgnore
                 else cardAsBtn Nothing x $ AppClickHandCard x
           )
@@ -234,7 +234,7 @@ pickWildCardColorScene model =
     btn = button ""
 
 handFromTurn :: (IsLabel "player2" a, IsLabel "player1" a) => Turn -> a
-handFromTurn TPLayer1 = #player1
+handFromTurn TPlayer1 = #player1
 handFromTurn TPlayer2 = #player2
 
 buildUI ::
