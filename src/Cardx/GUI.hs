@@ -161,7 +161,8 @@ cardAsUnkBtn Card {kind} =
 gameBoard model =
   scroll $
     vstack
-      [ separatorLine,
+      [ label "<Player 2>",
+        separatorLine,
         spacer,
         hstack $
           ( \x ->
@@ -195,7 +196,8 @@ gameBoard model =
           )
             <$> V.toList gs.player1.hand,
         spacer,
-        separatorLine
+        separatorLine,
+        label "<Player 1>"
       ]
       `styleBasic` [padding 10]
   where

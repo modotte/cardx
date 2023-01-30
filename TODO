@@ -1,7 +1,6 @@
 - Move private types and functions into their own *Internal* modules
 - Check perfect-vector-shuffle (currently blocked by base <= 4.9)
   for faster shuffling, but random-shuffle on list will do for now.
-- Tally scores.
 - Decide if we want to duplicate a shuffled deck in case players took all
 the cards from deck.
 
