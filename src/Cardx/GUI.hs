@@ -10,8 +10,6 @@ import Cardx.Model
 import Cardx.Util qualified as CU
 import Cardx.WildKind (WildKind (..))
 import Data.Default.Class qualified as D
-import Data.Text (Text)
-import Data.Text qualified as T
 import Data.Vector (Vector, (!))
 import Data.Vector qualified as V
 import GHC.Records (HasField)
@@ -150,10 +148,10 @@ cardAsUnkBtn Card {kind} =
 gameBoard ::
   ( HasField "hand" r1 (Vector Card),
     HasField "hand" r2 (Vector Card),
-    HasField "computer" r3 r1,
+    HasField "player2" r3 r1,
     HasField "deck" r3 [Card],
     HasField "drawPile" r3 [Card],
-    HasField "player" r3 r2,
+    HasField "player1" r3 r2,
     HasField "turn" r3 Turn,
     HasField "wildcardColor" r3 (Maybe ColoredCard),
     HasField "gameState" p r3
@@ -167,11 +165,11 @@ gameBoard model =
         spacer,
         hstack $
           ( \x ->
-              if gs.turn == TPlayer
+              if gs.turn == TPLayer1
                 then cardAsUnkBtn x AppIgnore
                 else cardAsBtn Nothing x $ AppClickHandCard x
           )
-            <$> V.toList gs.computer.hand,
+            <$> V.toList gs.player2.hand,
         spacer,
         separatorLine,
         spacer,
@@ -191,11 +189,11 @@ gameBoard model =
         spacer,
         hstack $
           ( \x ->
-              if gs.turn == TComputer
+              if gs.turn == TPlayer2
                 then cardAsUnkBtn x AppIgnore
                 else cardAsBtn Nothing x $ AppClickHandCard x
           )
-            <$> V.toList gs.player.hand,
+            <$> V.toList gs.player1.hand,
         spacer,
         separatorLine
       ]
@@ -210,10 +208,10 @@ playScene ::
     HasField "score" r2 a2,
     HasField "hand" r1 (Vector Card),
     HasField "hand" r2 (Vector Card),
-    HasField "computer" r3 r1,
+    HasField "player2" r3 r1,
     HasField "deck" r3 [Card],
     HasField "drawPile" r3 [Card],
-    HasField "player" r3 r2,
+    HasField "player1" r3 r2,
     HasField "turn" r3 Turn,
     HasField "wildcardColor" r3 (Maybe ColoredCard),
     HasField "gameState" r4 r3
@@ -223,8 +221,8 @@ playScene ::
 playScene model =
   vstack
     [ label $ "Win score: " <> TS.showt CC.maxScore,
-      label $ "Player score: " <> TS.showt gs.player.score,
-      label $ "Computer score: " <> TS.showt gs.computer.score,
+      label $ "Player 1 score: " <> TS.showt gs.player1.score,
+      label $ "Player 2 score: " <> TS.showt gs.player2.score,
       label $ "Next turn: " <> (TS.showt . nextTurn) gs.turn,
       spacer,
       gameBoard model
@@ -253,9 +251,9 @@ pickWildCardColorScene model =
     ck = CKFaceCard $ FaceCard {kind = 0, score = 1}
     btn = button ""
 
-handFromTurn :: (IsLabel "computer" a, IsLabel "player" a) => Turn -> a
-handFromTurn TPlayer = #player
-handFromTurn TComputer = #computer
+handFromTurn :: (IsLabel "player2" a, IsLabel "player1" a) => Turn -> a
+handFromTurn TPLayer1 = #player1
+handFromTurn TPlayer2 = #player2
 
 buildUI ::
   WidgetEnv AppModel AppEvent ->
@@ -349,8 +347,8 @@ handleEvent _ _ model evt =
           -- whoever in next turn choose.
           [ Model $
               model
-                & #gameState % #player % #hand .~ ph
-                & #gameState % #computer % #hand .~ ch
+                & #gameState % #player1 % #hand .~ ph
+                & #gameState % #player2 % #hand .~ ch
                 & #gameState % #deck .~ d''
                 & #gameState % #drawPile .~ [tc ! 0]
           ]

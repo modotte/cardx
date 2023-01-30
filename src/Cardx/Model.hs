@@ -58,13 +58,13 @@ instance TextShow GameProgression where
           RPWin -> "won the round! Keep on! ^^"
           RPInProgress -> ""
 
-data Dealer = DPlayer | DComputer deriving (Show, Eq, Generic)
+data Dealer = DPlayer1 | DPlayer2 deriving (Show, Eq, Generic)
 
-data Turn = TPlayer | TComputer deriving (Show, Eq, Generic)
+data Turn = TPLayer1 | TPlayer2 deriving (Show, Eq, Generic)
 
 instance TextShow Turn where
-  showt TPlayer = "Player"
-  showt TComputer = "Computer"
+  showt TPLayer1 = "Player 1"
+  showt TPlayer2 = "Player 2"
 
 data ColoredKind
   = CKActionCard ActionCard
@@ -93,8 +93,8 @@ instance Default GamePlayer where
   def = GamePlayer {hand = V.empty, score = 0, drawCount = 0}
 
 data GameState = GameState
-  { player :: GamePlayer,
-    computer :: GamePlayer,
+  { player1 :: GamePlayer,
+    player2 :: GamePlayer,
     wildcardColor :: Maybe ColoredCard,
     wildcardKind :: Maybe WildKind,
     deck :: [Card],
@@ -109,14 +109,14 @@ data GameState = GameState
 instance Default GameState where
   def =
     GameState
-      { player = def,
-        computer = def,
+      { player1 = def,
+        player2 = def,
         wildcardColor = Nothing,
         wildcardKind = Nothing,
         deck = makeDeck,
         drawPile = [],
-        turn = TComputer,
-        dealer = DComputer,
+        turn = TPlayer2,
+        dealer = DPlayer2,
         progression = GPInProgress,
         rng = R.mkStdGen 0
       }
@@ -173,15 +173,15 @@ cardScore (Card {kind = CWild (WildCard {score})}) = score
 cardScore (Card {kind = CColored cc}) = coloredScore cc
 
 pickDealer :: Card -> Card -> Dealer
-pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer else DComputer
+pickDealer pc cc = if cardScore pc > cardScore cc then DPlayer1 else DPlayer2
 
 nextTurn :: Turn -> Turn
-nextTurn TComputer = TPlayer
-nextTurn TPlayer = TComputer
+nextTurn TPlayer2 = TPLayer1
+nextTurn TPLayer1 = TPlayer2
 
 firstTurn :: Dealer -> Turn
-firstTurn DComputer = TPlayer
-firstTurn DPlayer = TComputer
+firstTurn DPlayer2 = TPLayer1
+firstTurn DPlayer1 = TPlayer2
 
 type DeckToHand = Maybe ([Card], Vector Card)
 
