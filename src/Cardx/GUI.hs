@@ -35,7 +35,7 @@ data Scene
   = SPickDealer
   | SPlay
   | SPickWildCardColor
-  | SEnd
+  | SEndRound
   deriving (Show, Eq)
 
 data AppEvent
@@ -50,18 +50,21 @@ data AppEvent
   | AppChangeScene Scene
   deriving (Show, Eq)
 
-menuScene :: WidgetNode s AppEvent
-menuScene =
+endScene ::
+  ( TS.TextShow a1,
+    TS.TextShow a2,
+    HasField "progression" r1 a1,
+    HasField "turn" r1 a2,
+    HasField "gameState" r2 r1
+  ) =>
+  r2 ->
+  WidgetNode s AppEvent
+endScene model =
   vstack
-    [ button "Start" (AppChangeScene SPickDealer)
-    ]
-
-endScene :: WidgetNode s AppEvent
-endScene =
-  vstack
-    [ label "You've TODO!!!",
+    [ label $ "Congratulations " <> TS.showt model.gameState.turn <> "!",
+      label $ "You've " <> TS.showt model.gameState.progression,
       button "Quit?" AppQuitGame,
-      button "Or start over?" AppResetRound
+      button "Or continue on until someone wins the whole game?" AppResetRound
     ]
 
 pickDealerScene ::
@@ -77,7 +80,7 @@ pickDealerScene model =
     [ if model.hasPickedDealer
         then
           vstack
-            [ label $ "Dealer of the game: " <> TS.showt model.gameState.turn,
+            [ label $ "Dealer of the round: " <> TS.showt model.gameState.turn,
               button "Play!" (AppChangeScene SPlay)
             ]
         else button "Pick a dealer" AppPickDealer
@@ -266,7 +269,7 @@ buildUI _ model = widgetTree
             SPickDealer -> pickDealerScene model
             SPlay -> playScene model
             SPickWildCardColor -> pickWildCardColorScene model
-            SEnd -> endScene
+            SEndRound -> endScene model
         ]
         `styleBasic` [padding 10]
 
@@ -385,7 +388,7 @@ handleEvent _ _ model evt =
 
                           toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
                        in if V.null $ model' ^. #gameState % handFromTurn gs.turn % #hand
-                            then [Event $ AppChangeScene SEnd]
+                            then [Model $ model & #gameState % #progression .~ GPRound RPWin, Event $ AppChangeScene SEndRound]
                             else case selectedCardKind of
                               CWild (WildCard {kind}) ->
                                 [ Model $
@@ -431,7 +434,7 @@ handleEvent _ _ model evt =
                 SPickDealer -> [changeScene SPickDealer]
                 SPlay -> [changeScene SPlay]
                 SPickWildCardColor -> [changeScene SPickWildCardColor]
-                SEnd -> [changeScene SEnd]
+                SEndRound -> [changeScene SEndRound]
 
 launchGUI :: IO ()
 launchGUI = do

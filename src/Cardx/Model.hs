@@ -1,5 +1,6 @@
 module Cardx.Model
-  ( GameProgression (..),
+  ( RoundProgression (..),
+    GameProgression (..),
     Dealer (..),
     Turn (..),
     ActionCard (..),
@@ -43,7 +44,19 @@ import System.Random (StdGen)
 import System.Random qualified as R
 import TextShow (TextShow, showt)
 
-data GameProgression = Win | InProgress | Lose deriving (Show, Eq, Generic)
+data RoundProgression = RPWin | RPInProgress deriving (Show, Eq, Generic)
+
+data GameProgression = GPWin | GPInProgress | GPRound RoundProgression deriving (Show, Eq, Generic)
+
+instance TextShow GameProgression where
+  showt x =
+    case x of
+      GPWin -> "won the whole game! :D"
+      GPInProgress -> ""
+      GPRound rp ->
+        case rp of
+          RPWin -> "won the round! Keep on! ^^"
+          RPInProgress -> ""
 
 data Dealer = DPlayer | DComputer deriving (Show, Eq, Generic)
 
@@ -104,7 +117,7 @@ instance Default GameState where
         drawPile = [],
         turn = TComputer,
         dealer = DComputer,
-        progression = InProgress,
+        progression = GPInProgress,
         rng = R.mkStdGen 0
       }
 
