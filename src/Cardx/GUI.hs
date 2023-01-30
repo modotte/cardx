@@ -46,6 +46,7 @@ data AppEvent
   | AppClickDeckCard
   | AppClickHandCard Card
   | AppPickWildCardColor ColoredCard
+  | AppResetRound
   | AppChangeScene Scene
   deriving (Show, Eq)
 
@@ -60,7 +61,7 @@ endScene =
   vstack
     [ label "You've TODO!!!",
       button "Go back to menu" (AppChangeScene SMenu),
-      button "Or start over?" (AppChangeScene SPickDealer)
+      button "Or start over?" AppResetRound
     ]
 
 pickDealerScene ::
@@ -297,7 +298,6 @@ resetEmptyDeck rng drawPile [] =
     -- This shouldn't happen
     [] -> ([], [])
     (x : xs) ->
-      -- TODO: Check if we need to increment seed everytime.
       ([x], shuffleCards xs rng)
 resetEmptyDeck _ drawPile deck = (drawPile, deck)
 
@@ -421,6 +421,10 @@ handleEvent _ _ model evt =
           where
             model' = model & ((#gameState % #wildcardColor) ?~ cc)
             toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
+        AppResetRound ->
+          [Model $ initialModel & #oldRng .~ g0, Event $ AppChangeScene SPickDealer]
+          where
+            g0 = model.oldRng
         AppChangeScene scene ->
           let changeScene s = Model $ model & #currentScene .~ s
            in case scene of
