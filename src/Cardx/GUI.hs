@@ -369,6 +369,38 @@ handleRoundEnd model =
     hft = handFromTurn $ model ^. #gameState % #turn
     ps = sumRoundWinnerScore model
 
+onClickHandCard ::
+  Card ->
+  CardKind ->
+  Natural ->
+  AppModel ->
+  [EventResponse AppModel AppEvent sp ep]
+onClickHandCard selectedCard selectedCardKind selectedCardId model =
+  let gs = model.gameState
+      pileTopCard = CU.defaultIfEmpty selectedCard gs.drawPile
+   in ( if isValidPattern selectedCard pileTopCard
+          then
+            ( let nh = V.filter (\c -> c.id /= selectedCardId) $ model ^. #gameState % handFromTurn gs.turn % #hand
+                  -- This cannot fail (player selection), so we default to the same card
+                  ndp = selectedCard : gs.drawPile
+                  hft m = handFromTurn $ m ^. #gameState % #turn
+                  model' =
+                    model
+                      & #gameState % hft model % #hand .~ nh
+                      & #gameState % #drawPile .~ ndp
+               in if V.null $ model' ^. #gameState % hft model' % #hand
+                    then handleRoundEnd model'
+                    else case selectedCardKind of
+                      CWild (WildCard {kind}) ->
+                        [ Model $
+                            model' & ((#gameState % #wildcardKind) ?~ kind),
+                          Event $ AppChangeScene SPickWildCardColor
+                        ]
+                      CColored scc -> handleColoredCards scc model'
+            )
+          else []
+      )
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -432,30 +464,7 @@ handleEvent _ _ model evt =
                   model ^. #gameState % handFromTurn gs.turn % #hand
                 )
             piles = resetEmptyDeck gs.rng gs.drawPile d
-        AppClickHandCard selectedCard@Card {id, kind = selectedCardKind} ->
-          let pileTopCard = CU.defaultIfEmpty selectedCard gs.drawPile
-           in ( if isValidPattern selectedCard pileTopCard
-                  then
-                    ( let nh = V.filter (\c -> c.id /= id) $ model ^. #gameState % handFromTurn gs.turn % #hand
-                          -- This cannot fail (player selection), so we default to the same card
-                          ndp = selectedCard : gs.drawPile
-                          hft m = handFromTurn $ m ^. #gameState % #turn
-                          model' =
-                            model
-                              & #gameState % hft model % #hand .~ nh
-                              & #gameState % #drawPile .~ ndp
-                       in if V.null $ model' ^. #gameState % hft model' % #hand
-                            then handleRoundEnd model'
-                            else case selectedCardKind of
-                              CWild (WildCard {kind}) ->
-                                [ Model $
-                                    model' & ((#gameState % #wildcardKind) ?~ kind),
-                                  Event $ AppChangeScene SPickWildCardColor
-                                ]
-                              CColored scc -> handleColoredCards scc model'
-                    )
-                  else []
-              )
+        AppClickHandCard card@Card {id, kind} -> onClickHandCard card kind id model
         AppPickWildCardColor cc ->
           case gs.wildcardKind of
             Nothing -> []
