@@ -325,6 +325,35 @@ sumRoundWinnerScore model =
     wh = model ^. #gameState % other % #hand
     s = V.foldl' (\a b -> cardScore b + a) 0 wh
 
+toNextTurn ::
+  ( Optics.Internal.Optic.Subtyping.JoinKinds k1 l k2,
+    Optics.Internal.Optic.Subtyping.Is
+      k2
+      Optics.Internal.Optic.Types.A_Setter,
+    Optics.Label.LabelOptic "turn" l u v a Turn,
+    Optics.Label.LabelOptic "gameState" k1 r1 b u v,
+    HasField "turn" r2 Turn,
+    HasField "gameState" r1 r2
+  ) =>
+  r1 ->
+  b
+toNextTurn m = m & #gameState % #turn .~ nextTurn m.gameState.turn
+
+handleColoredCards :: ColoredCard -> AppModel -> [EventResponse AppModel e sp ep]
+handleColoredCards scc model =
+  case getColoredKind scc of
+    CKFaceCard _ ->
+      maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildCardInfo model scc
+    CKActionCard (ActionCard {kind}) ->
+      case kind of
+        Skip ->
+          maybe [] (\x -> [Model x]) $ updatedWildCardInfo model scc
+        Draw2 ->
+          maybe
+            []
+            (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
+            $ updatedWildCardInfo model scc
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -400,8 +429,6 @@ handleEvent _ _ model evt =
                             model
                               & #gameState % hft model % #hand .~ nh
                               & #gameState % #drawPile .~ ndp
-
-                          toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
                        in if V.null $ model' ^. #gameState % hft model' % #hand
                             then
                               let sm = sumRoundWinnerScore model'
@@ -421,19 +448,7 @@ handleEvent _ _ model evt =
                                     model' & ((#gameState % #wildcardKind) ?~ kind),
                                   Event $ AppChangeScene SPickWildCardColor
                                 ]
-                              CColored scc ->
-                                case getColoredKind scc of
-                                  CKFaceCard _ ->
-                                    maybe [] (\x -> [Model $ toNextTurn x]) $ updatedWildCardInfo model' scc
-                                  CKActionCard (ActionCard {kind}) ->
-                                    case kind of
-                                      Skip ->
-                                        maybe [] (\x -> [Model x]) $ updatedWildCardInfo model' scc
-                                      Draw2 ->
-                                        maybe
-                                          []
-                                          (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
-                                          $ updatedWildCardInfo model' scc
+                              CColored scc -> handleColoredCards scc model'
                     )
                   else []
               )
@@ -449,7 +464,6 @@ handleEvent _ _ model evt =
                   ]
           where
             model' = model & ((#gameState % #wildcardColor) ?~ cc)
-            toNextTurn m = m & #gameState % #turn .~ nextTurn gs.turn
         AppResetRound ->
           [ Model $
               initialModel
