@@ -337,7 +337,7 @@ toNextTurn ::
   ) =>
   r1 ->
   b
-toNextTurn m = m & #gameState % #turn .~ nextTurn m.gameState.turn
+toNextTurn model = model & #gameState % #turn .~ nextTurn model.gameState.turn
 
 handleColoredCards :: ColoredCard -> AppModel -> [EventResponse AppModel e sp ep]
 handleColoredCards scc model =
@@ -353,6 +353,21 @@ handleColoredCards scc model =
             []
             (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
             $ updatedWildCardInfo model scc
+
+handleRoundEnd model =
+  [ Model $
+      model
+        & #gameState % #progression
+          .~ ( if ps >= CC.maxScore
+                 then GPWin
+                 else GPRound RPWin
+             )
+        & #gameState % hft % #score .~ ps,
+    Event $ AppChangeScene SEndRound
+  ]
+  where
+    hft = handFromTurn $ model ^. #gameState % #turn
+    ps = sumRoundWinnerScore model
 
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
@@ -430,18 +445,7 @@ handleEvent _ _ model evt =
                               & #gameState % hft model % #hand .~ nh
                               & #gameState % #drawPile .~ ndp
                        in if V.null $ model' ^. #gameState % hft model' % #hand
-                            then
-                              let sm = sumRoundWinnerScore model'
-                               in [ Model $
-                                      model'
-                                        & #gameState % #progression
-                                          .~ ( if sm >= CC.maxScore
-                                                 then GPWin
-                                                 else GPRound RPWin
-                                             )
-                                        & #gameState % hft model' % #score .~ sm,
-                                    Event $ AppChangeScene SEndRound
-                                  ]
+                            then handleRoundEnd model'
                             else case selectedCardKind of
                               CWild (WildCard {kind}) ->
                                 [ Model $
