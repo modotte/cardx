@@ -68,8 +68,8 @@ endScene ::
 endScene model =
   vstack
     [ label $ "To win the game score: " <> TS.showt CC.maxScore,
-      label $ "<Player 1> score: " <> TS.showt model.gameState.player1.score,
-      label $ "<Player 2> score: " <> TS.showt model.gameState.player2.score,
+      label $ TS.showt TPlayer1 <> " score: " <> TS.showt model.gameState.player1.score,
+      label $ TS.showt TPlayer2 <> " score: " <> TS.showt model.gameState.player2.score,
       label $ "Congratulations " <> TS.showt model.gameState.turn <> "!",
       label $ "You've " <> TS.showt model.gameState.progression,
       button "Quit?" AppQuitGame,
@@ -161,7 +161,7 @@ cardAsUnkBtn Card {kind} =
 gameBoard model =
   scroll $
     vstack
-      [ label "<Player 2>",
+      [ label $ TS.showt TPlayer2,
         separatorLine,
         spacer,
         hstack $
@@ -197,7 +197,7 @@ gameBoard model =
             <$> V.toList gs.player1.hand,
         spacer,
         separatorLine,
-        label "<Player 1>"
+        label $ TS.showt TPlayer1
       ]
       `styleBasic` [padding 10]
   where
