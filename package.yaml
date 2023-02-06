@@ -24,17 +24,14 @@ default-extensions:
   - DuplicateRecordFields
   - ImportQualifiedPost
   - NoFieldSelectors
-  - DeriveGeneric
   - NoImplicitPrelude
-  - NamedFieldPuns
+language: GHC2021
 
 dependencies:
   - base >= 4.7 && < 5
   - relude
   - data-default-class
   - vector
-  - text
-  - bytestring
   - optics
   - optics-core
   - monomer

@@ -45,13 +45,10 @@ library
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
-      DeriveGeneric
       NoImplicitPrelude
-      NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
-    , bytestring
     , data-default-class
     , monomer
     , optics
@@ -59,10 +56,9 @@ library
     , random
     , random-shuffle
     , relude
-    , text
     , text-show
     , vector
-  default-language: Haskell2010
+  default-language: GHC2021
 
 executable cardx-exe
   main-is: Main.hs
@@ -77,13 +73,10 @@ executable cardx-exe
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
-      DeriveGeneric
       NoImplicitPrelude
-      NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
     , cardx
     , data-default-class
     , monomer
@@ -92,10 +85,9 @@ executable cardx-exe
     , random
     , random-shuffle
     , relude
-    , text
     , text-show
     , vector
-  default-language: Haskell2010
+  default-language: GHC2021
 
 test-suite cardx-test
   type: exitcode-stdio-1.0
@@ -111,13 +103,10 @@ test-suite cardx-test
       DuplicateRecordFields
       ImportQualifiedPost
       NoFieldSelectors
-      DeriveGeneric
       NoImplicitPrelude
-      NamedFieldPuns
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
-    , bytestring
     , cardx
     , data-default-class
     , hspec
@@ -127,7 +116,6 @@ test-suite cardx-test
     , random
     , random-shuffle
     , relude
-    , text
     , text-show
     , vector
-  default-language: Haskell2010
+  default-language: GHC2021

@@ -46,9 +46,14 @@ import TextShow (TextShow, showt)
 
 data RoundProgression = RPWin | RPInProgress deriving (Show, Eq, Generic)
 
-data GameProgression = GPWin | GPInProgress | GPRound RoundProgression deriving (Show, Eq, Generic)
+data GameProgression
+  = GPWin
+  | GPInProgress
+  | GPRound RoundProgression
+  deriving (Show, Eq, Generic)
 
 instance TextShow GameProgression where
+  showt :: GameProgression -> Text
   showt x =
     case x of
       GPWin -> "won the whole game! :D"
@@ -63,6 +68,7 @@ data Dealer = DPlayer1 | DPlayer2 deriving (Show, Eq, Generic)
 data Turn = TPlayer1 | TPlayer2 deriving (Show, Eq, Generic)
 
 instance TextShow Turn where
+  showt :: Turn -> Text
   showt TPlayer1 = "<Player 1>"
   showt TPlayer2 = "<Player 2>"
 
@@ -90,6 +96,7 @@ data GamePlayer = GamePlayer
   deriving (Show, Eq, Generic)
 
 instance Default GamePlayer where
+  def :: GamePlayer
   def = GamePlayer {hand = V.empty, score = 0, drawCount = 0}
 
 data GameState = GameState
@@ -107,6 +114,7 @@ data GameState = GameState
   deriving (Show, Eq, Generic)
 
 instance Default GameState where
+  def :: GameState
   def =
     GameState
       { player1 = def,
@@ -132,7 +140,10 @@ makeColoredCardSet from color =
   faces . actions
   where
     actions = fmap (\x -> Card {id = 0, kind = CColored (color (CKActionCard x))})
-    faces = makeRange from (\x -> Card {id = 0, kind = CColored (color (CKFaceCard (FaceCard x x)))})
+    faces =
+      makeRange
+        from
+        (\x -> Card {id = 0, kind = CColored (color (CKFaceCard (FaceCard x x)))})
 
 makeColoreds :: Vector Card
 makeColoreds =
