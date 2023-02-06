@@ -401,6 +401,29 @@ onClickHandCard selectedCard selectedCardKind selectedCardId model =
           else []
       )
 
+onDealCards model =
+  case f topCard of
+    CWild (WildCard {kind}) ->
+      [ Model $
+          model' & ((#gameState % #wildcardKind) ?~ kind),
+        Event $ AppChangeScene SPickWildCardColor
+      ]
+    CColored _ -> [Model model']
+  where
+    gs = model.gameState
+    n = 7
+    (d, ph) = unsafeF n (shuffleCards gs.deck gs.rng, V.empty)
+    (d', ch) = unsafeF n (d, V.empty)
+    (d'', tc) = unsafeF 1 (d', V.empty)
+    topCard = tc ! 0
+    f Card {kind} = kind
+    model' =
+      model
+        & #gameState % #player1 % #hand .~ ph
+        & #gameState % #player2 % #hand .~ ch
+        & #gameState % #deck .~ d''
+        & #gameState % #drawPile .~ [topCard]
+
 handleEvent ::
   WidgetEnv AppModel AppEvent ->
   WidgetNode AppModel AppEvent ->
@@ -428,27 +451,7 @@ handleEvent _ _ model evt =
             (d, ph) = unsafeF n (shuffleCards gs.deck old, V.empty)
             (_, ch) = unsafeF n (d, V.empty)
             dealer = pickDealer (ph ! 0) (ch ! 0)
-        AppDealCards ->
-          case f topCard of
-            CWild (WildCard {kind}) ->
-              [ Model $
-                  model' & ((#gameState % #wildcardKind) ?~ kind),
-                Event $ AppChangeScene SPickWildCardColor
-              ]
-            CColored _ -> [Model model']
-          where
-            n = 7
-            (d, ph) = unsafeF n (shuffleCards gs.deck gs.rng, V.empty)
-            (d', ch) = unsafeF n (d, V.empty)
-            (d'', tc) = unsafeF 1 (d', V.empty)
-            topCard = tc ! 0
-            f Card {kind} = kind
-            model' =
-              model
-                & #gameState % #player1 % #hand .~ ph
-                & #gameState % #player2 % #hand .~ ch
-                & #gameState % #deck .~ d''
-                & #gameState % #drawPile .~ [topCard]
+        AppDealCards -> onDealCards model
         AppClickDeckCard ->
           [ Model $
               model
