@@ -1,5 +1,6 @@
-- Move private types and functions into their own *Internal* modules
-- Check perfect-vector-shuffle (currently blocked by base <= 4.9)
+- Move private types and functions into their own *Internal* modules.
+- Check perfect-vector-shuffle (currently blocked by base <= 4.9).
   for faster shuffling, but random-shuffle on list will do for now.
 - Decide if we want to duplicate a shuffled deck in case players took all
 the cards from deck.
+- Find a way to avoid using AllowAmbiguousTypes extension in Cardx.GUI.Event*.
