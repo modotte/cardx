@@ -33,6 +33,7 @@ library
       Cardx.GUI.Event
       Cardx.GUI.Types
       Cardx.GUI.View
+      Cardx.GUI.View.Internal
       Cardx.Model
       Cardx.Util
       Cardx.WildCard

@@ -7,6 +7,7 @@ module Cardx.GUI (launchGUI) where
 import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.GUI.Types
+import Cardx.GUI.View qualified as CGV
 import Cardx.Model
 import Cardx.Util qualified as CU
 import Cardx.WildKind (WildKind (..))
@@ -24,163 +25,11 @@ import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
 
-endScene ::
-  ( TS.TextShow a1,
-    TS.TextShow a2,
-    TS.TextShow a3,
-    HasField "score" r1 a1,
-    HasField "score" r2 a2,
-    HasField "player1" r3 r2,
-    HasField "player2" r3 r1,
-    HasField "progression" r3 GameProgression,
-    HasField "turn" r3 a3,
-    HasField "gameState" r4 r3
-  ) =>
-  r4 ->
-  WidgetNode s AppEvent
-endScene model =
-  vstack
-    [ label $ "To win the game score: " <> TS.showt CC.maxScore,
-      label $ TS.showt TPlayer1 <> " score: " <> TS.showt model.gameState.player1.score,
-      label $ TS.showt TPlayer2 <> " score: " <> TS.showt model.gameState.player2.score,
-      label $ "Congratulations " <> TS.showt model.gameState.turn <> "!",
-      label $ "You've " <> TS.showt model.gameState.progression,
-      button "Quit?" AppQuitGame,
-      if model.gameState.progression /= GPWin
-        then button "Or continue on until someone wins the whole game?" AppResetRound
-        else vstack []
-    ]
-
-pickDealerScene ::
-  ( TS.TextShow a,
-    HasField "turn" r1 a,
-    HasField "gameState" r2 r1,
-    HasField "hasPickedDealer" r2 Bool
-  ) =>
-  r2 ->
-  WidgetNode s AppEvent
-pickDealerScene model =
-  vstack
-    [ if model.hasPickedDealer
-        then
-          vstack
-            [ label $ "Dealer of the round: " <> TS.showt model.gameState.turn,
-              button "Play!" (AppChangeScene SPlay)
-            ]
-        else button "Pick a dealer" AppPickDealer
-    ]
-
-cardTextColor :: StyleState
-cardTextColor = textColor white
-
-specialCardStyle :: [StyleState]
-specialCardStyle = cardTextColor : [bgColor black]
-
--- TODO: Show score on cards
-wcAsBtn :: Typeable e => Maybe ColoredCard -> WildCard -> e -> WidgetNode s e
-wcAsBtn mwcc (WildCard {kind, score}) evt =
-  btn `styleBasic` style
-  where
-    style =
-      case mwcc of
-        Nothing -> specialCardStyle
-        Just wcc ->
-          case wcc of
-            RedCard _ -> cardTextColor : [bgColor red]
-            YellowCard _ -> cardTextColor : [bgColor yellow]
-            GreenCard _ -> cardTextColor : [bgColor green]
-            BlueCard _ -> cardTextColor : [bgColor blue]
-    btn = button (TS.showt kind) evt
-
-wcAsUnkBtn :: Typeable e => WildCard -> e -> WidgetNode s e
-wcAsUnkBtn (WildCard {}) evt =
-  button "?" evt `styleBasic` specialCardStyle
-
-ckAsBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
-ckAsBtn (CKActionCard (ActionCard {kind, score})) = button $ TS.showt kind
-ckAsBtn (CKFaceCard (FaceCard {kind, score})) = button $ TS.showt kind
-
-ckAsUnkBtn :: Typeable e => ColoredKind -> e -> WidgetNode s e
-ckAsUnkBtn (CKActionCard (ActionCard {})) = button "?"
-ckAsUnkBtn (CKFaceCard (FaceCard {})) = button "?"
-
-ccAsBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
-ccAsBtn (RedCard x) evt =
-  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor red])
-ccAsBtn (YellowCard x) evt =
-  ckAsBtn x evt `styleBasic` (textColor black : [bgColor yellow])
-ccAsBtn (GreenCard x) evt =
-  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor green])
-ccAsBtn (BlueCard x) evt =
-  ckAsBtn x evt `styleBasic` (cardTextColor : [bgColor blue])
-
-ccAsUnkBtn :: Typeable e => ColoredCard -> e -> WidgetNode s e
-ccAsUnkBtn cc evt = btn evt `styleBasic` specialCardStyle
-  where
-    btn = ckAsUnkBtn $ getColoredKind cc
-
-cardAsBtn :: Typeable p => Maybe ColoredCard -> Card -> p -> WidgetNode s p
-cardAsBtn wcc Card {kind} =
-  case kind of
-    CWild x -> wcAsBtn wcc x
-    CColored x -> ccAsBtn x
-
-cardAsUnkBtn :: Typeable e => Card -> e -> WidgetNode s e
-cardAsUnkBtn Card {kind} =
-  case kind of
-    CWild x -> wcAsUnkBtn x
-    CColored x -> ccAsUnkBtn x
-
-gameBoard model =
-  scroll $
-    vstack
-      [ label $ TS.showt TPlayer2,
-        separatorLine,
-        spacer,
-        hstack $
-          ( \x ->
-              if gs.turn == TPlayer1
-                then cardAsUnkBtn x AppIgnore
-                else cardAsBtn Nothing x $ AppClickHandCard x
-          )
-            <$> V.toList gs.player2.hand,
-        spacer,
-        separatorLine,
-        spacer,
-        hstack
-          [ case gs.deck of
-              [] -> label "Empty deck!"
-              (x : _) -> hstack [cardAsUnkBtn x AppClickDeckCard],
-            spacer,
-            separatorLine,
-            spacer,
-            case gs.drawPile of
-              [] -> label "Empty draw pile!"
-              (x : _) -> hstack [cardAsBtn gs.wildcardColor x AppIgnore]
-          ],
-        spacer,
-        separatorLine,
-        spacer,
-        hstack $
-          ( \x ->
-              if gs.turn == TPlayer2
-                then cardAsUnkBtn x AppIgnore
-                else cardAsBtn Nothing x $ AppClickHandCard x
-          )
-            <$> V.toList gs.player1.hand,
-        spacer,
-        separatorLine,
-        label $ TS.showt TPlayer1
-      ]
-      `styleBasic` [padding 10]
-  where
-    gs = model.gameState
-
 playScene model =
   vstack
     [ label $ "Next turn: " <> (TS.showt . nextTurn) gs.turn,
       spacer,
-      gameBoard model
+      CGV.gameBoard model
     ]
   where
     gs = model.gameState
@@ -219,10 +68,10 @@ buildUI _ model = widgetTree
     widgetTree =
       vstack
         [ case model.currentScene of
-            SPickDealer -> pickDealerScene model
+            SPickDealer -> CGV.pickDealerScene model
             SPlay -> playScene model
             SPickWildCardColor -> pickWildCardColorScene model
-            SEndRound -> endScene model
+            SEndRound -> CGV.endScene model
         ]
         `styleBasic` [padding 10]
 
