@@ -31,7 +31,9 @@ library
       Cardx.FaceCard
       Cardx.GUI
       Cardx.GUI.Event
+      Cardx.GUI.Event.Internal
       Cardx.GUI.Types
+      Cardx.GUI.Util
       Cardx.GUI.View
       Cardx.GUI.View.Internal
       Cardx.Model
