@@ -24,7 +24,7 @@ main = hspec $ do
           ]
 
     it "makeRange" $ do
-      CM.makeRange 2 (\x -> RedCard (CKFaceCard (FaceCard x x))) (V.fromList [RedCard (CKActionCard (ActionCard {kind = Draw2, score = CC.actionScore})), RedCard (CKActionCard (ActionCard {kind = Skip, score = CC.actionScore}))])
+      CM.makeRange 0 (\x -> RedCard (CKFaceCard (FaceCard x x))) (V.fromList [RedCard (CKActionCard (ActionCard {kind = Draw2, score = CC.actionScore})), RedCard (CKActionCard (ActionCard {kind = Skip, score = CC.actionScore}))])
         `shouldBe` V.fromList
           [ RedCard (CKActionCard (ActionCard {kind = Draw2, score = 20})),
             RedCard (CKActionCard (ActionCard {kind = Skip, score = 20})),

@@ -13,6 +13,22 @@ import Monomer
 import Relude hiding (id, (&))
 import TextShow qualified as TS
 
+makeView ::
+  WidgetEnv AppModel AppEvent ->
+  AppModel ->
+  WidgetNode AppModel AppEvent
+makeView _ model = widgetTree
+  where
+    widgetTree =
+      vstack
+        [ case model.currentScene of
+            SPickDealer -> pickDealerScene model
+            SPlay -> playScene model
+            SPickWildCardColor -> pickWildCardColorScene model
+            SEndRound -> endScene model
+        ]
+        `styleBasic` [padding 10]
+
 endScene ::
   ( TS.TextShow a1,
     TS.TextShow a2,
@@ -156,19 +172,3 @@ pickWildCardColorScene model =
     kt = maybe "" TS.showt $ model.gameState.wildcardKind
     ck = CKFaceCard $ FaceCard {kind = 0, score = 1}
     btn = button ""
-
-makeView ::
-  WidgetEnv AppModel AppEvent ->
-  AppModel ->
-  WidgetNode AppModel AppEvent
-makeView _ model = widgetTree
-  where
-    widgetTree =
-      vstack
-        [ case model.currentScene of
-            SPickDealer -> pickDealerScene model
-            SPlay -> playScene model
-            SPickWildCardColor -> pickWildCardColorScene model
-            SEndRound -> endScene model
-        ]
-        `styleBasic` [padding 10]
