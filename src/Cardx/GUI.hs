@@ -23,48 +23,10 @@ import Optics.Label qualified
 import Relude hiding (id, (&))
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
-import TextShow qualified as TS
-
-pickWildCardColorScene ::
-  ( HasField "gameState" p r,
-    HasField "wildcardKind" r (Maybe a),
-    TS.TextShow a
-  ) =>
-  p ->
-  WidgetNode s AppEvent
-pickWildCardColorScene model =
-  vstack
-    [ label $ "Pick " <> kt <> " color:",
-      spacer,
-      btn (AppPickWildCardColor $ RedCard ck) `styleBasic` [bgColor red],
-      btn (AppPickWildCardColor $ YellowCard ck) `styleBasic` [bgColor yellow],
-      btn (AppPickWildCardColor $ GreenCard ck) `styleBasic` [bgColor green],
-      btn (AppPickWildCardColor $ BlueCard ck) `styleBasic` [bgColor blue]
-    ]
-  where
-    kt = maybe "" TS.showt $ model.gameState.wildcardKind
-    ck = CKFaceCard $ FaceCard {kind = 0, score = 1}
-    btn = button ""
 
 handFromTurn :: (IsLabel "player2" a, IsLabel "player1" a) => Turn -> a
 handFromTurn TPlayer1 = #player1
 handFromTurn TPlayer2 = #player2
-
-buildUI ::
-  WidgetEnv AppModel AppEvent ->
-  AppModel ->
-  WidgetNode AppModel AppEvent
-buildUI _ model = widgetTree
-  where
-    widgetTree =
-      vstack
-        [ case model.currentScene of
-            SPickDealer -> CGV.pickDealerScene model
-            SPlay -> CGV.playScene model
-            SPickWildCardColor -> pickWildCardColorScene model
-            SEndRound -> CGV.endScene model
-        ]
-        `styleBasic` [padding 10]
 
 initialModel :: AppModel
 initialModel = AppModel D.def SPickDealer False $ R.mkStdGen 0
@@ -317,7 +279,7 @@ launchGUI :: IO ()
 launchGUI = do
   rng <- R.newStdGen
   let model = initialModel & #gameState % #rng .~ rng & #oldRng .~ rng
-  startApp model handleEvent buildUI config
+  startApp model handleEvent CGV.buildUI config
   where
     config =
       [ appWindowTitle "Cardx",

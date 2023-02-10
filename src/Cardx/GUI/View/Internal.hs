@@ -1,3 +1,5 @@
+{-# LANGUAGE DataKinds #-}
+
 module Cardx.GUI.View.Internal (cardAsBtn, cardAsUnkBtn) where
 
 import Cardx.Model

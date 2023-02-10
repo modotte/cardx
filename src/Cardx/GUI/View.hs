@@ -1,26 +1,16 @@
 {-# LANGUAGE DataKinds #-}
 
-module Cardx.GUI.View (endScene, pickDealerScene, gameBoard, playScene) where
+module Cardx.GUI.View (buildUI) where
 
-import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
 import Cardx.GUI.Types
 import Cardx.GUI.View.Internal (cardAsBtn, cardAsUnkBtn)
 import Cardx.Model
-import Cardx.Util qualified as CU
-import Cardx.WildKind (WildKind (..))
-import Data.Default.Class qualified as D
-import Data.Vector (Vector, (!))
+import Data.Vector (Vector)
 import Data.Vector qualified as V
 import GHC.Records (HasField)
 import Monomer
-import Optics ((%), (&), (.~), (?~), (^.))
-import Optics.Internal.Optic.Subtyping qualified
-import Optics.Internal.Optic.Types qualified
-import Optics.Label qualified
 import Relude hiding (id, (&))
-import System.Random qualified as R
-import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
 
 endScene ::
@@ -145,3 +135,40 @@ playScene model =
     ]
   where
     gs = model.gameState
+
+pickWildCardColorScene ::
+  ( HasField "gameState" p r,
+    HasField "wildcardKind" r (Maybe a),
+    TS.TextShow a
+  ) =>
+  p ->
+  WidgetNode s AppEvent
+pickWildCardColorScene model =
+  vstack
+    [ label $ "Pick " <> kt <> " color:",
+      spacer,
+      btn (AppPickWildCardColor $ RedCard ck) `styleBasic` [bgColor red],
+      btn (AppPickWildCardColor $ YellowCard ck) `styleBasic` [bgColor yellow],
+      btn (AppPickWildCardColor $ GreenCard ck) `styleBasic` [bgColor green],
+      btn (AppPickWildCardColor $ BlueCard ck) `styleBasic` [bgColor blue]
+    ]
+  where
+    kt = maybe "" TS.showt $ model.gameState.wildcardKind
+    ck = CKFaceCard $ FaceCard {kind = 0, score = 1}
+    btn = button ""
+
+buildUI ::
+  WidgetEnv AppModel AppEvent ->
+  AppModel ->
+  WidgetNode AppModel AppEvent
+buildUI _ model = widgetTree
+  where
+    widgetTree =
+      vstack
+        [ case model.currentScene of
+            SPickDealer -> pickDealerScene model
+            SPlay -> playScene model
+            SPickWildCardColor -> pickWildCardColorScene model
+            SEndRound -> endScene model
+        ]
+        `styleBasic` [padding 10]
