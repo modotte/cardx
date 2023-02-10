@@ -20,17 +20,15 @@ jobs:
       with:
         ghc-version: '9.2.5'
         cabal-version: '3.2'
-        
+
     - name: Install system dependencies
       run: |
-        sudp apt install -y libglew-dev \
+        sudo apt install -y libglew-dev \
                     # we just use libghc-sdl2 deps for simplicity
                     libghc-sdl2-dev \
                     libghc-sdl2-ttf-dev \
                     libsdl2-image-dev \
                     libsdl2-gfx-dev
-        
-
     - name: Cache
       uses: actions/cache@v3
       env:
