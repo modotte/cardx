@@ -20,13 +20,6 @@ jobs:
       with:
         ghc-version: '9.2.5'
         cabal-version: '3.2'
-
-    - name: Install system dependencies
-      run: |
-        sudo apt install -y libglew-dev \
-                    libsdl2-ttf-dev \
-                    libsdl2-image-dev \
-                    libsdl2-gfx-dev
     - name: Cache
       uses: actions/cache@v3
       env:
@@ -38,7 +31,12 @@ jobs:
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
           ${{ runner.os }}-
-
+    - name: Install system dependencies
+      run: |
+        sudo apt install -y libglew-dev \
+                    libsdl2-ttf-dev \
+                    libsdl2-image-dev \
+                    libsdl2-gfx-dev
     - name: Install dependencies
       run: |
         cabal update
