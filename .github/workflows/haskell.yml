@@ -23,7 +23,7 @@ jobs:
         
     - name: Install system dependencies
       run: |
-        apt install libglew-dev \
+        sudp apt install -y libglew-dev \
                     # we just use libghc-sdl2 deps for simplicity
                     libghc-sdl2-dev \
                     libghc-sdl2-ttf-dev \
