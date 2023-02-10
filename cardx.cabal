@@ -30,6 +30,9 @@ library
       Cardx.Constant
       Cardx.FaceCard
       Cardx.GUI
+      Cardx.GUI.Event
+      Cardx.GUI.Types
+      Cardx.GUI.View
       Cardx.Model
       Cardx.Util
       Cardx.WildCard

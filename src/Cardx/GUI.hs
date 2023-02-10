@@ -6,6 +6,7 @@ module Cardx.GUI (launchGUI) where
 
 import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
+import Cardx.GUI.Types
 import Cardx.Model
 import Cardx.Util qualified as CU
 import Cardx.WildKind (WildKind (..))
@@ -19,37 +20,9 @@ import Optics.Internal.Optic.Subtyping qualified
 import Optics.Internal.Optic.Types qualified
 import Optics.Label qualified
 import Relude hiding (id, (&))
-import System.Random (StdGen)
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
-
-data AppModel = AppModel
-  { gameState :: GameState,
-    currentScene :: Scene,
-    hasPickedDealer :: Bool,
-    oldRng :: StdGen
-  }
-  deriving (Show, Eq, Generic)
-
-data Scene
-  = SPickDealer
-  | SPlay
-  | SPickWildCardColor
-  | SEndRound
-  deriving (Show, Eq)
-
-data AppEvent
-  = AppIgnore
-  | AppQuitGame
-  | AppPickDealer
-  | AppDealCards
-  | AppClickDeckCard
-  | AppClickHandCard Card
-  | AppPickWildCardColor ColoredCard
-  | AppResetRound
-  | AppChangeScene Scene
-  deriving (Show, Eq)
 
 endScene ::
   ( TS.TextShow a1,
