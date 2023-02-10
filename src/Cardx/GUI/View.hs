@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 
-module Cardx.GUI.View (buildUI) where
+module Cardx.GUI.View (makeView) where
 
 import Cardx.Constant qualified as CC
 import Cardx.GUI.Types
@@ -157,11 +157,11 @@ pickWildCardColorScene model =
     ck = CKFaceCard $ FaceCard {kind = 0, score = 1}
     btn = button ""
 
-buildUI ::
+makeView ::
   WidgetEnv AppModel AppEvent ->
   AppModel ->
   WidgetNode AppModel AppEvent
-buildUI _ model = widgetTree
+makeView _ model = widgetTree
   where
     widgetTree =
       vstack

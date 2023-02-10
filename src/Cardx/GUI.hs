@@ -279,7 +279,7 @@ launchGUI :: IO ()
 launchGUI = do
   rng <- R.newStdGen
   let model = initialModel & #gameState % #rng .~ rng & #oldRng .~ rng
-  startApp model handleEvent CGV.buildUI config
+  startApp model handleEvent CGV.makeView config
   where
     config =
       [ appWindowTitle "Cardx",
