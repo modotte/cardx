@@ -25,15 +25,6 @@ import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
 import TextShow qualified as TS
 
-playScene model =
-  vstack
-    [ label $ "Next turn: " <> (TS.showt . nextTurn) gs.turn,
-      spacer,
-      CGV.gameBoard model
-    ]
-  where
-    gs = model.gameState
-
 pickWildCardColorScene ::
   ( HasField "gameState" p r,
     HasField "wildcardKind" r (Maybe a),
@@ -69,7 +60,7 @@ buildUI _ model = widgetTree
       vstack
         [ case model.currentScene of
             SPickDealer -> CGV.pickDealerScene model
-            SPlay -> playScene model
+            SPlay -> CGV.playScene model
             SPickWildCardColor -> pickWildCardColorScene model
             SEndRound -> CGV.endScene model
         ]

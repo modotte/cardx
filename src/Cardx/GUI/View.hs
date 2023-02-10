@@ -1,6 +1,6 @@
 {-# LANGUAGE DataKinds #-}
 
-module Cardx.GUI.View (endScene, pickDealerScene, gameBoard) where
+module Cardx.GUI.View (endScene, pickDealerScene, gameBoard, playScene) where
 
 import Cardx.ActionKind (ActionKind (..))
 import Cardx.Constant qualified as CC
@@ -69,7 +69,19 @@ pickDealerScene model =
         else button "Pick a dealer" AppPickDealer
     ]
 
-gameBoard model =
+gameBoard ::
+  ( HasField "hand" r1 (Vector Card),
+    HasField "hand" r2 (Vector Card),
+    HasField "deck" r3 [Card],
+    HasField "drawPile" r3 [Card],
+    HasField "player1" r3 r2,
+    HasField "player2" r3 r1,
+    HasField "turn" r3 Turn,
+    HasField "wildcardColor" r3 (Maybe ColoredCard)
+  ) =>
+  r3 ->
+  WidgetNode s AppEvent
+gameBoard gs =
   scroll $
     vstack
       [ label $ TS.showt TPlayer2,
@@ -111,5 +123,25 @@ gameBoard model =
         label $ TS.showt TPlayer1
       ]
       `styleBasic` [padding 10]
+
+playScene ::
+  ( HasField "hand" r1 (Vector Card),
+    HasField "hand" r2 (Vector Card),
+    HasField "deck" r3 [Card],
+    HasField "drawPile" r3 [Card],
+    HasField "player1" r3 r2,
+    HasField "player2" r3 r1,
+    HasField "turn" r3 Turn,
+    HasField "wildcardColor" r3 (Maybe ColoredCard),
+    HasField "gameState" p r3
+  ) =>
+  p ->
+  WidgetNode s AppEvent
+playScene model =
+  vstack
+    [ label $ "Next turn: " <> (TS.showt . nextTurn) gs.turn,
+      spacer,
+      gameBoard gs
+    ]
   where
     gs = model.gameState
