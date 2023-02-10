@@ -1,7 +1,7 @@
 module Cardx.GUI.Types (AppModel (..), Scene (..), AppEvent (..)) where
 
 import Cardx.Model (Card, ColoredCard, GameState)
-import Relude
+import Relude (Bool, Eq, Generic, Show)
 import System.Random (StdGen)
 
 data AppModel = AppModel
