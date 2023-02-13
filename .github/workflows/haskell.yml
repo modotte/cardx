@@ -33,7 +33,7 @@ jobs:
           ${{ runner.os }}-build-${{ env.cache-name }}-
           ${{ runner.os }}-build-
           ${{ runner.os }}-
-    - name: Install system dependencies
+    - name: Install APT packages
       run: |
         sudo apt install -y libglew-dev \
                     libsdl2-ttf-dev \
