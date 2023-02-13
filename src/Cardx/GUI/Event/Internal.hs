@@ -1,4 +1,3 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
 {-# LANGUAGE DataKinds #-}
 
 module Cardx.GUI.Event.Internal
@@ -19,12 +18,8 @@ import Cardx.GUI.Types
 import Cardx.Model
 import Data.Vector (Vector)
 import Data.Vector qualified as V
-import GHC.Records (HasField)
 import Monomer
 import Optics ((%), (&), (.~), (^.))
-import Optics.Internal.Optic.Subtyping qualified
-import Optics.Internal.Optic.Types qualified
-import Optics.Label qualified
 import Relude hiding (id, (&))
 import System.Random qualified as R
 import System.Random.Shuffle qualified as RS
@@ -60,27 +55,7 @@ resetEmptyDeck rng drawPile [] =
       ([x], shuffleCards xs rng)
 resetEmptyDeck _ drawPile deck = (drawPile, deck)
 
-sumRoundWinnerScore ::
-  ( Optics.Label.LabelOptic "player1" l1 u1 v1 u2 v2,
-    Optics.Label.LabelOptic "player2" l1 u1 v1 u2 v2,
-    HasField "turn" r Turn,
-    HasField "gameState" p r,
-    Optics.Internal.Optic.Subtyping.Is
-      k1
-      Optics.Internal.Optic.Types.A_Getter,
-    Optics.Internal.Optic.Subtyping.JoinKinds k2 l2 k1,
-    Optics.Internal.Optic.Subtyping.JoinKinds k3 l1 k2,
-    Optics.Label.LabelOptic
-      "hand"
-      l2
-      u2
-      v2
-      (Vector Card)
-      (Vector Card),
-    Optics.Label.LabelOptic "gameState" k3 p p u1 v1
-  ) =>
-  p ->
-  Natural
+sumRoundWinnerScore :: AppModel -> Natural
 sumRoundWinnerScore model =
   s
   where
@@ -88,10 +63,15 @@ sumRoundWinnerScore model =
     wh = model ^. #gameState % other % #hand
     s = V.foldl' (\a b -> cardScore b + a) 0 wh
 
+toNextTurn :: AppModel -> AppModel
 toNextTurn model = model & #gameState % #turn .~ nextTurn model.gameState.turn
 
+updatedWildCardInfo ::
+  AppModel ->
+  ColoredCard ->
+  Maybe AppModel
 updatedWildCardInfo model scc =
-  case mwcc of
+  case model ^. #gameState % #wildcardColor of
     Nothing -> Just model
     Just wcc ->
       if eqColor scc wcc
@@ -101,8 +81,6 @@ updatedWildCardInfo model scc =
             & #gameState % #wildcardKind .~ Nothing
             & Just
         else Nothing
-  where
-    mwcc = model.gameState.wildcardColor
 
 handleColoredCards :: ColoredCard -> AppModel -> [EventResponse AppModel e sp ep]
 handleColoredCards scc model =
@@ -119,6 +97,7 @@ handleColoredCards scc model =
             (\x -> [Model $ handleSpecialDrawCards x 2 & toNextTurn])
             $ updatedWildCardInfo model scc
 
+handleRoundEnd :: AppModel -> [EventResponse AppModel AppEvent sp ep]
 handleRoundEnd model =
   [ Model $
       model

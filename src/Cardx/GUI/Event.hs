@@ -1,5 +1,3 @@
-{-# LANGUAGE AllowAmbiguousTypes #-}
-
 module Cardx.GUI.Event (handleEvent) where
 
 import Cardx.GUI.Event.Internal qualified as CGEI
@@ -123,6 +121,7 @@ onClickHandCard selectedCard selectedCardKind selectedCardId model =
           else []
       )
 
+onDealCards :: AppModel -> [EventResponse AppModel AppEvent sp ep]
 onDealCards model =
   case f topCard of
     CWild (WildCard {kind}) ->

@@ -3,5 +3,4 @@
   for faster shuffling, but random-shuffle on list will do for now.
 - Decide if we want to duplicate a shuffled deck in case players took all
 the cards from deck.
-- Find a way to avoid using AllowAmbiguousTypes extension in Cardx.GUI.Event*.
-- Optimize CI by caching Ubuntu apt dependencies. (see docker)
+- Optimize CI by caching Ubuntu apt dependencies. (see docker).
