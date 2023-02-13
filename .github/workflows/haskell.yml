@@ -20,7 +20,9 @@ jobs:
       with:
         ghc-version: '9.2.5'
         cabal-version: '3.2'
-    - name: Cache
+    - name: Cache APT Packages
+      uses: awalsh128/cache-apt-pkgs-action@v1.2.4
+    - name: Cache Cabal
       uses: actions/cache@v3
       env:
         cache-name: cache-cabal
