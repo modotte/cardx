@@ -24,7 +24,7 @@ jobs:
       uses: awalsh128/cache-apt-pkgs-action@v1.2.4
       with:
         packages: libglew-dev libsdl2-ttf-dev libsdl2-image-dev libsdl2-gfx-dev
-    - name: Cache Cabal
+    - name: Cache Cabal packages
       uses: actions/cache@v3
       env:
         cache-name: cache-cabal

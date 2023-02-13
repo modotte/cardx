@@ -16,13 +16,23 @@ available matching card.
 
 ## Building
 
-You'll need GHC 9.2.5 and recent stack (or Cabal) executable installed.
+You'll need these to be installed:
+  - GHC 9.2.5 (could be obtained via ghcup)
+  - Recent `stack` or `cabal` executable (could be obtained via ghcup).
+  - System dependencies (this is for Ubuntu 22.04):
+    - libglew-dev
+    - libsdl2-ttf-dev
+    - libsdl2-image-dev
+    - libsdl2-gfx-dev
+ 
 
-Run `stack run` in the project directory to build and launch the game.
+### Running
 
-If the build failed and complained about missing external dependencies, you
-might need SDL2 libraries (i.e `SDL2-devel`) to get installed first. See
-[Monomer](https://github.com/fjvallarino/monomer) for more unlisted GUI dependencies
+Run `stack run` or `cabal run` from inside the project directory to launch program.
+
+### Testing
+
+Run `stack test` or `cabal test` to execute unit tests.
 
 ## LICENSE
 This software has been released under the BSD-3-Clause license.
