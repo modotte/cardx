@@ -3,4 +3,3 @@
   for faster shuffling, but random-shuffle on list will do for now.
 - Decide if we want to duplicate a shuffled deck in case players took all
 the cards from deck.
-- Optimize CI by caching Ubuntu apt dependencies. (see docker).
